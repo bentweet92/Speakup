@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpeakUp — Speak Better. Get Hired.</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --border: #2a2a2a;
+    --accent: #e8ff4a;
+    --accent2: #ff6b35;
+    --text: #f0f0f0;
+    --muted: #666;
+    --danger: #ff4a4a;
+    --success: #4aff8c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.4;
+  }
+
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .logo span { color: var(--accent); }
+
+  .streak-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .streak-badge .fire { font-size: 16px; }
+  .streak-badge .count { color: var(--accent); font-weight: 500; }
+
+  /* Progress bar - "You vs Yesterday" */
+  .progress-banner {
+    display: none;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin-bottom: 28px;
+    font-size: 13px;
+  }
+
+  .progress-banner.visible { display: block; }
+
+  .progress-banner .label { color: var(--muted); margin-bottom: 10px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+
+  .score-compare {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .score-item { display: flex; flex-direction: column; gap: 2px; }
+  .score-item .day { font-size: 11px; color: var(--muted); }
+  .score-item .val { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 700; }
+  .score-item .val.up { color: var(--success); }
+  .score-item .val.same { color: var(--text); }
+
+  .score-arrow { color: var(--accent); font-size: 20px; }
+  .score-delta { color: var(--success); font-size: 13px; font-weight: 500; align-self: flex-end; padding-bottom: 4px; }
+
+  /* Scenario */
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .scenario-nav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .scenario-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 7px 14px;
+    border-radius: 100px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .scenario-btn:hover { border-color: var(--accent); color: var(--text); }
+  .scenario-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 500; }
+
+  .prompt-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .prompt-card::before {
+    content: '"';
+    position: absolute;
+    top: -10px;
+    left: 16px;
+    font-size: 80px;
+    color: var(--accent);
+    opacity: 0.15;
+    font-family: 'Syne', sans-serif;
+    line-height: 1;
+  }
+
+  .prompt-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.5;
+    position: relative;
+    z-index: 1;
+  }
+
+  .prompt-sub {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* Timer */
+  .timer-ring {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+
+  .timer-svg { transform: rotate(-90deg); }
+
+  .timer-track { fill: none; stroke: var(--surface2); stroke-width: 4; }
+  .timer-fill {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-dasharray: 283;
+    stroke-dashoffset: 283;
+    transition: stroke-dashoffset 1s linear;
+  }
+
+  .timer-fill.recording { stroke: var(--danger); }
+
+  .timer-label {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .timer-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .timer-unit { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* Record button */
+  .record-area { text-align: center; }
+
+  .record-btn {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: 0 0 0 0 rgba(232,255,74,0.4);
+  }
+
+  .record-btn:hover { transform: scale(1.05); }
+  .record-btn.recording {
+    background: var(--danger);
+    animation: pulse 1.5s infinite;
+    box-shadow: 0 0 0 8px rgba(255,74,74,0.15);
+  }
+
+  .record-btn.disabled { background: var(--surface2); cursor: not-allowed; opacity: 0.5; }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,74,74,0.4); }
+    50% { box-shadow: 0 0 0 16px rgba(255,74,74,0); }
+  }
+
+  .record-icon { width: 28px; height: 28px; }
+
+  .record-status {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--muted);
+    min-height: 20px;
+  }
+
+  .record-status.active { color: var(--danger); }
+  .record-status.processing { color: var(--accent); }
+
+  /* Transcript preview */
+  .transcript-box {
+    display: none;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin: 20px 0;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  .transcript-box.visible { display: block; }
+  .transcript-box .t-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .transcript-box .t-text { color: var(--text); }
+
+  /* Feedback */
+  .feedback-section {
+    display: none;
+    margin-top: 32px;
+    animation: fadeUp 0.4s ease;
+  }
+
+  .feedback-section.visible { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Score grid */
+  .score-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .score-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  .score-card .sc-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+
+  .score-card .sc-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .score-card .sc-val.good { color: var(--success); }
+  .score-card .sc-val.mid { color: var(--accent); }
+  .score-card .sc-val.bad { color: var(--danger); }
+  .score-card .sc-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* Fixes list */
+  .fixes-box {
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+
+  .fixes-box .fx-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+
+  .fix-item {
+    display: flex;
+    gap: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .fix-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+  .fix-num { color: var(--accent); font-weight: 500; min-width: 18px; }
+
+  /* Better version */
+  .better-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--success);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .better-box .bv-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--success); margin-bottom: 12px; }
+  .better-box .bv-text { font-size: 14px; line-height: 1.8; color: var(--text); font-style: italic; }
+
+  /* Micro win */
+  .micro-win {
+    display: none;
+    background: linear-gradient(135deg, rgba(74,255,140,0.08), rgba(232,255,74,0.06));
+    border: 1px solid rgba(74,255,140,0.2);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: var(--success);
+  }
+
+  .micro-win.visible { display: block; }
+
+  /* Retry button */
+  .retry-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 12px;
+  }
+
+  .retry-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(232,255,74,0.2); }
+
+  .new-prompt-btn {
+    width: 100%;
+    padding: 14px;
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .new-prompt-btn:hover { border-color: var(--text); color: var(--text); }
+
+  /* Inline feedback (2 questions) */
+  .feedback-capture {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+  }
+
+  .feedback-capture.visible { display: block; }
+  .feedback-capture .fc-label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+
+  .fc-q { font-size: 14px; margin-bottom: 10px; }
+
+  .fc-options { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+
+  .fc-opt {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .fc-opt:hover, .fc-opt.selected { border-color: var(--accent); color: var(--accent); }
+
+  .fc-text {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    resize: none;
+    min-height: 72px;
+    margin-bottom: 12px;
+    outline: none;
+  }
+
+  .fc-text:focus { border-color: var(--accent); }
+
+  .fc-submit {
+    padding: 10px 20px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .fc-submit:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* API key prompt */
+  .api-setup {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 28px;
+  }
+
+  .api-setup h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .api-setup p { font-size: 13px; color: var(--muted); margin-bottom: 16px; line-height: 1.6; }
+
+  .api-input-row { display: flex; gap: 10px; }
+
+  .api-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    outline: none;
+  }
+
+  .api-input:focus { border-color: var(--accent); }
+
+  .api-save {
+    padding: 12px 20px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .error-msg {
+    display: none;
+    color: var(--danger);
+    font-size: 12px;
+    margin-top: 8px;
+  }
+
+  .error-msg.visible { display: block; }
+
+  /* Waveform animation */
+  .waveform {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    height: 32px;
+    margin: 12px 0;
+  }
+
+  .waveform.active { display: flex; }
+
+  .wave-bar {
+    width: 3px;
+    background: var(--danger);
+    border-radius: 2px;
+    animation: wave 0.8s ease-in-out infinite;
+  }
+
+  .wave-bar:nth-child(1) { animation-delay: 0s; height: 8px; }
+  .wave-bar:nth-child(2) { animation-delay: 0.1s; height: 20px; }
+  .wave-bar:nth-child(3) { animation-delay: 0.2s; height: 28px; }
+  .wave-bar:nth-child(4) { animation-delay: 0.3s; height: 16px; }
+  .wave-bar:nth-child(5) { animation-delay: 0.4s; height: 24px; }
+  .wave-bar:nth-child(6) { animation-delay: 0.5s; height: 12px; }
+  .wave-bar:nth-child(7) { animation-delay: 0.3s; height: 22px; }
+  .wave-bar:nth-child(8) { animation-delay: 0.15s; height: 10px; }
+
+  @keyframes wave {
+    0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
+    50% { transform: scaleY(1); opacity: 1; }
+  }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    .score-grid { grid-template-columns: repeat(2, 1fr); }
+    .prompt-text { font-size: 16px; }
+    .api-input-row { flex-direction: column; }
+  }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">Speak<span>Up</span></div>
+    <div class="streak-badge">
+      <span class="fire">🔥</span>
+      <span class="count" id="streakCount">0</span>
+      <span>day streak</span>
+    </div>
+  </div>
+
+  <!-- API Setup -->
+  <div class="api-setup" id="assemblySetup">
+    <h3>Setup: AssemblyAI Key</h3>
+    <p>SpeakUp uses AssemblyAI for real speech-to-text transcription. Get a free API key at <strong>assemblyai.com</strong> (free tier: 5 hours/month). Your key stays in your browser only.</p>
+    <div class="api-input-row">
+      <input type="password" class="api-input" id="assemblyKeyInput" placeholder="Paste your AssemblyAI key here..." />
+      <button class="api-save" onclick="saveAssemblyKey()">Save</button>
+    </div>
+    <div class="error-msg" id="assemblyError">Invalid key format. AssemblyAI keys start with a long alphanumeric string.</div>
+  </div>
+
+  <!-- You vs Yesterday -->
+  <div class="progress-banner" id="progressBanner">
+    <div class="label">📈 Your Progress</div>
+    <div class="score-compare">
+      <div class="score-item">
+        <span class="day">Yesterday</span>
+        <span class="val same" id="prevScore">—</span>
+      </div>
+      <span class="score-arrow">→</span>
+      <div class="score-item">
+        <span class="day">Today</span>
+        <span class="val up" id="todayScore">—</span>
+      </div>
+      <span class="score-delta" id="scoreDelta"></span>
+    </div>
+  </div>
+
+  <!-- Scenario selector -->
+  <div class="section-label">Choose your scenario</div>
+  <div class="scenario-nav" id="scenarioNav"></div>
+
+  <!-- Prompt card -->
+  <div class="prompt-card" id="promptCard">
+    <div class="prompt-text" id="promptText">Loading...</div>
+    <div class="prompt-sub" id="promptSub"></div>
+  </div>
+
+  <!-- Record area -->
+  <div class="record-area" id="recordArea">
+    <div style="position:relative; display:inline-flex; align-items:center; justify-content:center;">
+      <svg class="timer-svg" width="120" height="120" viewBox="0 0 100 100">
+        <circle class="timer-track" cx="50" cy="50" r="45"/>
+        <circle class="timer-fill" id="timerFill" cx="50" cy="50" r="45"/>
+      </svg>
+      <div class="timer-label">
+        <span class="timer-num" id="timerNum">90</span>
+        <span class="timer-unit">sec</span>
+      </div>
+    </div>
+
+    <div class="waveform" id="waveform">
+      <div class="wave-bar"></div><div class="wave-bar"></div>
+      <div class="wave-bar"></div><div class="wave-bar"></div>
+      <div class="wave-bar"></div><div class="wave-bar"></div>
+      <div class="wave-bar"></div><div class="wave-bar"></div>
+    </div>
+
+    <br>
+    <button class="record-btn" id="recordBtn" onclick="toggleRecord()">
+      <svg class="record-icon" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="11" r="4" fill="#000"/>
+        <path d="M19 11a7 7 0 01-14 0M12 18v3M9 21h6" stroke="#000" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+
+    <div class="record-status" id="recordStatus">Tap to start speaking</div>
+  </div>
+
+  <!-- Transcript preview -->
+  <div class="transcript-box" id="transcriptBox">
+    <div class="t-label">What we heard</div>
+    <div class="t-text" id="transcriptText"></div>
+  </div>
+
+  <!-- Feedback section -->
+  <div class="feedback-section" id="feedbackSection">
+    <div class="section-label" style="margin-bottom:16px">Your Analysis</div>
+
+    <div class="score-grid">
+      <div class="score-card">
+        <div class="sc-label">Confidence</div>
+        <div class="sc-val" id="scoreConfidence">—</div>
+        <div class="sc-sub">out of 10</div>
+      </div>
+      <div class="score-card">
+        <div class="sc-label">Filler Words</div>
+        <div class="sc-val" id="scoreFillers">—</div>
+        <div class="sc-sub" id="fillerSub">detected</div>
+      </div>
+      <div class="score-card">
+        <div class="sc-label">Clarity</div>
+        <div class="sc-val" id="scoreClarity">—</div>
+        <div class="sc-sub">out of 10</div>
+      </div>
+      <div class="score-card">
+        <div class="sc-label">Pace</div>
+        <div class="sc-val" id="scorePace">—</div>
+        <div class="sc-sub" id="paceSub">words/min</div>
+      </div>
+    </div>
+
+    <!-- Top 2 fixes -->
+    <div class="fixes-box">
+      <div class="fx-label">Top 2 things to fix next time</div>
+      <div class="fix-item"><span class="fix-num">01</span><span id="fix1">—</span></div>
+      <div class="fix-item"><span class="fix-num">02</span><span id="fix2">—</span></div>
+    </div>
+
+    <!-- Better version -->
+    <div class="better-box">
+      <div class="bv-label">How a confident speaker would say this</div>
+      <div class="bv-text" id="betterVersion">—</div>
+    </div>
+
+    <!-- Micro win (shows on retry if improved) -->
+    <div class="micro-win" id="microWin"></div>
+
+    <!-- Action buttons -->
+    <button class="retry-btn" onclick="retryPrompt()">↺ Try Again — Beat Your Score</button>
+    <button class="new-prompt-btn" onclick="nextPrompt()">Next Scenario →</button>
+
+    <!-- Feedback capture -->
+    <div class="feedback-capture" id="feedbackCapture">
+      <div class="fc-label">Quick feedback (helps us improve)</div>
+      <div class="fc-q">Was this useful?</div>
+      <div class="fc-options">
+        <button class="fc-opt" onclick="selectFeedback(this, 'yes')">✓ Yes</button>
+        <button class="fc-opt" onclick="selectFeedback(this, 'somewhat')">~ Somewhat</button>
+        <button class="fc-opt" onclick="selectFeedback(this, 'no')">✕ No</button>
+      </div>
+      <textarea class="fc-text" id="feedbackText" placeholder="What felt off or missing? (optional)"></textarea>
+      <button class="fc-submit" onclick="submitFeedback()">Submit →</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─── State ────────────────────────────────────────────────────────
+const state = {
+  assemblyKey: localStorage.getItem('aai_key') || '',
+  currentScenario: 0,
+  sessionCount: parseInt(localStorage.getItem('sessionCount') || '0'),
+  streak: parseInt(localStorage.getItem('streak') || '0'),
+  lastDate: localStorage.getItem('lastDate') || '',
+  prevScore: parseFloat(localStorage.getItem('prevScore') || '0'),
+  currentSessionScore: 0,
+  mediaRecorder: null,
+  audioChunks: [],
+  isRecording: false,
+  timerInterval: null,
+  timeLeft: 90,
+  maxTime: 90,
+  feedbackChoice: '',
+  sessionHistory: JSON.parse(localStorage.getItem('sessionHistory') || '[]'),
+};
+
+const scenarios = [
+  {
+    tag: "Intro",
+    prompt: "Introduce yourself as if you're meeting your new manager on the first day.",
+    sub: "Speak for 60–90 seconds. Don't read anything.",
+    context: "job interview / first day at work introduction"
+  },
+  {
+    tag: "Interview",
+    prompt: "Tell me about a challenge you faced and how you handled it.",
+    sub: "Common interview question. Speak naturally.",
+    context: "behavioural interview answer (STAR format expected)"
+  },
+  {
+    tag: "Explain",
+    prompt: "Explain what you do at work (or what you studied) in simple terms.",
+    sub: "Imagine explaining to someone outside your field.",
+    context: "professional clarity and simplification"
+  },
+  {
+    tag: "Situation",
+    prompt: "Your boss gives you a deadline you think is unrealistic. What do you say?",
+    sub: "Handle this professionally in 45–60 seconds.",
+    context: "workplace conflict / assertive communication"
+  },
+  {
+    tag: "Convince",
+    prompt: "Convince me why I should hire you over 10 other candidates.",
+    sub: "You have 60 seconds. Be specific.",
+    context: "sales pitch / self-advocacy in interview"
+  },
+  {
+    tag: "Opinion",
+    prompt: "What do you think about working in a team vs. working alone?",
+    sub: "Share your genuine opinion with examples.",
+    context: "opinion sharing / structured reasoning"
+  }
+];
+
+// ─── Init ─────────────────────────────────────────────────────────
+function init() {
+  updateStreak();
+  renderScenarios();
+  loadScenario(0);
+  checkSetup();
+  showProgressBanner();
+}
+
+function checkSetup() {
+  const setup = document.getElementById('assemblySetup');
+  if (state.assemblyKey) {
+    setup.style.display = 'none';
+  }
+}
+
+function saveAssemblyKey() {
+  const input = document.getElementById('assemblyKeyInput').value.trim();
+  const err = document.getElementById('assemblyError');
+  if (!input || input.length < 20) {
+    err.classList.add('visible');
+    return;
+  }
+  err.classList.remove('visible');
+  state.assemblyKey = input;
+  localStorage.setItem('aai_key', input);
+  document.getElementById('assemblySetup').style.display = 'none';
+}
+
+function updateStreak() {
+  const today = new Date().toDateString();
+  if (state.lastDate !== today) {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (state.lastDate === yesterday.toDateString()) {
+      state.streak += 1;
+    } else if (state.lastDate !== '') {
+      state.streak = 1;
+    }
+    state.lastDate = today;
+    localStorage.setItem('lastDate', today);
+    localStorage.setItem('streak', state.streak);
+  }
+  document.getElementById('streakCount').textContent = state.streak || 0;
+}
+
+function renderScenarios() {
+  const nav = document.getElementById('scenarioNav');
+  nav.innerHTML = '';
+  scenarios.forEach((s, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'scenario-btn' + (i === 0 ? ' active' : '');
+    btn.textContent = s.tag;
+    btn.onclick = () => loadScenario(i);
+    nav.appendChild(btn);
+  });
+}
+
+function loadScenario(i) {
+  state.currentScenario = i;
+  document.querySelectorAll('.scenario-btn').forEach((b, idx) => {
+    b.classList.toggle('active', idx === i);
+  });
+  document.getElementById('promptText').textContent = scenarios[i].prompt;
+  document.getElementById('promptSub').textContent = scenarios[i].sub;
+  resetUI();
+}
+
+function resetUI() {
+  document.getElementById('feedbackSection').classList.remove('visible');
+  document.getElementById('transcriptBox').classList.remove('visible');
+  document.getElementById('microWin').classList.remove('visible');
+  document.getElementById('feedbackCapture').classList.remove('visible');
+  document.getElementById('recordStatus').textContent = 'Tap to start speaking';
+  document.getElementById('recordStatus').className = 'record-status';
+  resetTimer();
+}
+
+function showProgressBanner() {
+  if (state.prevScore > 0 && state.currentSessionScore > 0) {
+    const banner = document.getElementById('progressBanner');
+    const delta = (state.currentSessionScore - state.prevScore).toFixed(1);
+    document.getElementById('prevScore').textContent = state.prevScore.toFixed(1);
+    document.getElementById('todayScore').textContent = state.currentSessionScore.toFixed(1);
+    document.getElementById('scoreDelta').textContent = delta > 0 ? `+${delta} ↑` : `${delta}`;
+    banner.classList.add('visible');
+  }
+}
+
+// ─── Timer ────────────────────────────────────────────────────────
+function resetTimer() {
+  clearInterval(state.timerInterval);
+  state.timeLeft = state.maxTime;
+  updateTimerDisplay();
+  document.getElementById('timerFill').classList.remove('recording');
+  document.getElementById('waveform').classList.remove('active');
+  document.getElementById('recordBtn').className = 'record-btn';
+}
+
+function updateTimerDisplay() {
+  document.getElementById('timerNum').textContent = state.timeLeft;
+  const circumference = 283;
+  const progress = (state.maxTime - state.timeLeft) / state.maxTime;
+  document.getElementById('timerFill').style.strokeDashoffset = circumference * (1 - progress);
+}
+
+function startTimer() {
+  state.timerInterval = setInterval(() => {
+    state.timeLeft--;
+    updateTimerDisplay();
+    if (state.timeLeft <= 0) stopRecording();
+  }, 1000);
+}
+
+// ─── Recording ────────────────────────────────────────────────────
+async function toggleRecord() {
+  if (!state.assemblyKey) {
+    document.getElementById('assemblySetup').style.display = 'block';
+    document.getElementById('assemblySetup').scrollIntoView({ behavior: 'smooth' });
+    return;
+  }
+  if (state.isRecording) {
+    stopRecording();
+  } else {
+    startRecording();
+  }
+}
+
+async function startRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    state.audioChunks = [];
+
+    // iOS Safari only supports audio/mp4; other browsers prefer webm
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm')
+      ? 'audio/webm'
+      : MediaRecorder.isTypeSupported('audio/mp4')
+        ? 'audio/mp4'
+        : '';
+
+    state.mediaRecorder = mimeType
+      ? new MediaRecorder(stream, { mimeType })
+      : new MediaRecorder(stream);
+
+    state.audioMimeType = state.mediaRecorder.mimeType || mimeType || 'audio/webm';
+    state.mediaRecorder.ondataavailable = e => { if (e.data.size > 0) state.audioChunks.push(e.data); };
+    state.mediaRecorder.onstop = processAudio;
+    state.mediaRecorder.start(250); // collect chunks every 250ms for reliability
+    state.isRecording = true;
+    state.timeLeft = state.maxTime;
+
+    document.getElementById('recordBtn').className = 'record-btn recording';
+    document.getElementById('timerFill').classList.add('recording');
+    document.getElementById('waveform').classList.add('active');
+    document.getElementById('recordStatus').textContent = 'Recording... tap to stop';
+    document.getElementById('recordStatus').className = 'record-status active';
+    document.getElementById('feedbackSection').classList.remove('visible');
+    document.getElementById('transcriptBox').classList.remove('visible');
+
+    startTimer();
+  } catch (e) {
+    document.getElementById('recordStatus').textContent = 'Microphone access denied. Please allow mic.';
+  }
+}
+
+function stopRecording() {
+  if (!state.isRecording) return;
+  clearInterval(state.timerInterval);
+  state.isRecording = false;
+  state.mediaRecorder.stop();
+  state.mediaRecorder.stream.getTracks().forEach(t => t.stop());
+
+  document.getElementById('recordBtn').className = 'record-btn disabled';
+  document.getElementById('waveform').classList.remove('active');
+  document.getElementById('timerFill').classList.remove('recording');
+  document.getElementById('recordStatus').textContent = 'Processing your audio...';
+  document.getElementById('recordStatus').className = 'record-status processing';
+}
+
+// ─── AssemblyAI Transcription ─────────────────────────────────────
+async function processAudio() {
+  const blob = new Blob(state.audioChunks, { type: state.audioMimeType || 'audio/mp4' });
+
+  try {
+    // Step 1: Upload audio to AssemblyAI
+    const uploadRes = await fetch('https://api.assemblyai.com/v2/upload', {
+      method: 'POST',
+      headers: { 'authorization': state.assemblyKey },
+      body: blob
+    });
+
+    if (!uploadRes.ok) throw new Error('Upload failed. Check your AssemblyAI key.');
+    const { upload_url } = await uploadRes.json();
+
+    // Step 2: Request transcription
+    const transcribeRes = await fetch('https://api.assemblyai.com/v2/transcript', {
+      method: 'POST',
+      headers: {
+        'authorization': state.assemblyKey,
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        audio_url: upload_url,
+        language_code: 'en',
+        disfluencies: true
+      })
+    });
+
+    const { id } = await transcribeRes.json();
+
+    // Step 3: Poll for result
+    document.getElementById('recordStatus').textContent = 'Transcribing... (~10 sec)';
+    const transcript = await pollTranscript(id);
+
+    if (!transcript || transcript.trim().length < 5) {
+      throw new Error("Couldn't hear you clearly. Try speaking closer to the mic.");
+    }
+
+    // Show transcript
+    document.getElementById('transcriptText').textContent = transcript;
+    document.getElementById('transcriptBox').classList.add('visible');
+
+    // Step 4: Get Claude feedback
+    document.getElementById('recordStatus').textContent = 'Analysing your speech...';
+    await getFeedback(transcript);
+
+  } catch (err) {
+    document.getElementById('recordBtn').className = 'record-btn';
+    document.getElementById('recordStatus').textContent = '⚠ ' + err.message;
+    document.getElementById('recordStatus').className = 'record-status';
+  }
+}
+
+async function pollTranscript(id) {
+  for (let i = 0; i < 30; i++) {
+    await sleep(2000);
+    const res = await fetch(`https://api.assemblyai.com/v2/transcript/${id}`, {
+      headers: { 'authorization': state.assemblyKey }
+    });
+    const data = await res.json();
+    if (data.status === 'completed') return data.text;
+    if (data.status === 'error') throw new Error('Transcription error: ' + data.error);
+  }
+  throw new Error('Transcription timed out. Try again.');
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ─── Claude Feedback ──────────────────────────────────────────────
+async function getFeedback(transcript) {
+  const scenario = scenarios[state.currentScenario];
+  const spokenWords = transcript.split(' ').length;
+  const duration = (state.maxTime - state.timeLeft) || 60;
+  const wpm = Math.round((spokenWords / duration) * 60);
+
+  const prompt = `You are a brutally honest spoken English coach for Indian professionals preparing for job interviews and workplace communication.
+
+Scenario: ${scenario.context}
+Prompt given: "${scenario.prompt}"
+
+What the person said (transcribed from audio):
+"${transcript}"
+
+Estimated pace: ~${wpm} words/minute. Duration: ~${duration} seconds.
+
+Analyse this speech and return ONLY a valid JSON object (no markdown, no explanation outside the JSON):
+
+{
+  "confidence_score": <number 1-10, be harsh — most people score 4-7>,
+  "clarity_score": <number 1-10>,
+  "filler_count": <count of ums, uhs, likes, you knows, so, basically, actually (used as fillers)>,
+  "filler_words": <comma-separated list of specific fillers you detected>,
+  "pace_wpm": ${wpm},
+  "pace_label": <"too slow" | "good" | "too fast">,
+  "harsh_observation": <one sentence, direct, specific — what's actually wrong with how they spoke. Don't sugarcoat. E.g. "You sound hesitant and unclear — this would hurt you in an interview.">
+  "fix_1": <most important thing to fix — be specific with examples from their speech>,
+  "fix_2": <second most important fix — specific>,
+  "better_version": <rewrite their answer as a confident, clear, professional speaker would say it — same ideas, better delivery, 3-5 sentences, no filler words>,
+  "overall_score": <average of confidence and clarity, one decimal>
+}`;
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error('Claude API error: ' + (err.error?.message || res.status));
+  }
+
+  const data = await res.json();
+  const raw = data.content[0].text;
+
+  let feedback;
+  try {
+    const clean = raw.replace(/```json|```/g, '').trim();
+    feedback = JSON.parse(clean);
+  } catch {
+    throw new Error('Feedback parsing failed. Try again.');
+  }
+
+  renderFeedback(feedback);
+}
+
+function renderFeedback(f) {
+  // Scores
+  const conf = f.confidence_score;
+  const clar = f.clarity_score;
+  const overall = f.overall_score || ((conf + clar) / 2).toFixed(1);
+
+  setScoreEl('scoreConfidence', conf, 10);
+  setScoreEl('scoreClarity', clar, 10);
+
+  document.getElementById('scoreFillers').textContent = f.filler_count;
+  document.getElementById('scoreFillers').className = 'sc-val ' + (f.filler_count > 8 ? 'bad' : f.filler_count > 3 ? 'mid' : 'good');
+  document.getElementById('fillerSub').textContent = f.filler_words || 'detected';
+
+  document.getElementById('scorePace').textContent = f.pace_wpm;
+  document.getElementById('scorePace').className = 'sc-val ' + (f.pace_label === 'good' ? 'good' : 'mid');
+  document.getElementById('paceSub').textContent = f.pace_label + ' pace';
+
+  // Fixes
+  document.getElementById('fix1').textContent = f.fix_1;
+  document.getElementById('fix2').textContent = f.fix_2;
+
+  // Better version
+  document.getElementById('betterVersion').textContent = f.better_version;
+
+  // Micro win (if retry improved score)
+  if (state.prevScore > 0 && overall > state.prevScore) {
+    const delta = (overall - state.prevScore).toFixed(1);
+    const win = document.getElementById('microWin');
+    win.textContent = `🎯 You improved by +${delta} points from your last session. Keep going.`;
+    win.classList.add('visible');
+  }
+
+  // Save score
+  state.prevScore = parseFloat(overall);
+  state.currentSessionScore = parseFloat(overall);
+  localStorage.setItem('prevScore', overall);
+
+  // Update session count & streak
+  state.sessionCount++;
+  localStorage.setItem('sessionCount', state.sessionCount);
+  updateStreak();
+
+  // Show progress banner
+  showProgressBanner();
+
+  // Show feedback capture after 3rd session
+  if (state.sessionCount % 3 === 0) {
+    document.getElementById('feedbackCapture').classList.add('visible');
+  }
+
+  document.getElementById('feedbackSection').classList.add('visible');
+  document.getElementById('recordBtn').className = 'record-btn';
+  document.getElementById('recordStatus').textContent = 'Done! See your analysis below.';
+  document.getElementById('recordStatus').className = 'record-status';
+
+  document.getElementById('feedbackSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+function setScoreEl(id, val, max) {
+  const el = document.getElementById(id);
+  el.textContent = val;
+  const pct = val / max;
+  el.className = 'sc-val ' + (pct >= 0.75 ? 'good' : pct >= 0.5 ? 'mid' : 'bad');
+}
+
+// ─── Actions ──────────────────────────────────────────────────────
+function retryPrompt() {
+  document.getElementById('feedbackSection').classList.remove('visible');
+  document.getElementById('transcriptBox').classList.remove('visible');
+  document.getElementById('microWin').classList.remove('visible');
+  resetTimer();
+  document.getElementById('recordStatus').textContent = 'Tap to try again — beat your score';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function nextPrompt() {
+  const next = (state.currentScenario + 1) % scenarios.length;
+  loadScenario(next);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function selectFeedback(btn, val) {
+  document.querySelectorAll('.fc-opt').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  state.feedbackChoice = val;
+}
+
+function submitFeedback() {
+  const text = document.getElementById('feedbackText').value;
+  // In production: send to your backend / WhatsApp / email
+  console.log('Feedback:', state.feedbackChoice, text);
+  document.getElementById('feedbackCapture').innerHTML = '<div style="color:var(--success);font-size:13px;">✓ Thanks. This helps us improve.</div>';
+}
+
+init();
+</script>
+</body>
+</html>
