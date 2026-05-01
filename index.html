@@ -962,35 +962,23 @@ async function processAudio() {
   const blob = new Blob(state.audioChunks, { type: state.audioMimeType || 'audio/mp4' });
 
   try {
-    // Step 1: Upload audio to AssemblyAI
-    const uploadRes = await fetch('https://api.assemblyai.com/v2/upload', {
+    document.getElementById('recordStatus').textContent = 'Uploading audio...';
+
+    const PROXY_URL = 'https://speakup-backend-vert.vercel.app/api/transcribe';
+
+    const proxyRes = await fetch(PROXY_URL, {
       method: 'POST',
-      headers: { 'authorization': state.assemblyKey },
+      headers: { 'x-assembly-key': state.assemblyKey },
       body: blob
     });
 
-    if (!uploadRes.ok) throw new Error('Upload failed. Check your AssemblyAI key.');
-    const { upload_url } = await uploadRes.json();
+    if (!proxyRes.ok) {
+      const err = await proxyRes.json();
+      throw new Error(err.error || 'Transcription failed');
+    }
 
-    // Step 2: Request transcription
-    const transcribeRes = await fetch('https://api.assemblyai.com/v2/transcript', {
-      method: 'POST',
-      headers: {
-        'authorization': state.assemblyKey,
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify({
-        audio_url: upload_url,
-        language_code: 'en',
-        disfluencies: true
-      })
-    });
-
-    const { id } = await transcribeRes.json();
-
-    // Step 3: Poll for result
-    document.getElementById('recordStatus').textContent = 'Transcribing... (~10 sec)';
-    const transcript = await pollTranscript(id);
+    document.getElementById('recordStatus').textContent = 'Transcribing your speech...';
+    const { transcript } = await proxyRes.json();
 
     if (!transcript || transcript.trim().length < 5) {
       throw new Error("Couldn't hear you clearly. Try speaking closer to the mic.");
