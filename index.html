@@ -389,15 +389,7 @@
     </div>
   </div>
  
-  <div class="api-setup" id="assemblySetup">
-    <h3>Setup: AssemblyAI Key</h3>
-    <p>SpeakUp uses AssemblyAI for real speech-to-text transcription. Get a free API key at <strong>assemblyai.com</strong> (free tier: 5 hours/month). Your key stays in your browser only.</p>
-    <div class="api-input-row">
-      <input type="password" class="api-input" id="assemblyKeyInput" placeholder="Paste your AssemblyAI key here..." />
-      <button class="api-save" onclick="saveAssemblyKey()">Save</button>
-    </div>
-    <div class="error-msg" id="assemblyError">Invalid key format. AssemblyAI keys start with a long alphanumeric string.</div>
-  </div>
+  
  
   <div class="progress-banner" id="progressBanner">
     <div class="label">📈 Your Progress</div>
@@ -706,7 +698,6 @@ async function processAudio() {
     // Step 1: Upload and get ID
     const transcribeRes = await fetch(BACKEND + '/api/transcribe', {
       method: 'POST',
-      headers: { 'x-assembly-key': state.assemblyKey },
       body: blob
     });
  
@@ -722,9 +713,7 @@ async function processAudio() {
     let transcript = null;
     for (let i = 0; i < 20; i++) {
       await sleep(3000);
-      const statusRes = await fetch(BACKEND + '/api/status?id=' + id, {
-        headers: { 'x-assembly-key': state.assemblyKey }
-      });
+      const statusRes = await fetch(BACKEND + '/api/status?id=' + id);
       const statusData = await statusRes.json();
       if (statusData.status === 'completed') { transcript = statusData.text; break; }
       if (statusData.status === 'error') throw new Error('Transcription failed. Try again.');
