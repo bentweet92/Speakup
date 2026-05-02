@@ -511,7 +511,7 @@
 const BACKEND = 'https://speakup-backend-vert.vercel.app';
  
 const state = {
-  assemblyKey: localStorage.getItem('aai_key') || '',
+  
   currentScenario: 0,
   sessionCount: parseInt(localStorage.getItem('sessionCount') || '0'),
   streak: parseInt(localStorage.getItem('streak') || '0'),
@@ -541,23 +541,12 @@ function init() {
   updateStreak();
   renderScenarios();
   loadScenario(0);
-  checkSetup();
   showProgressBanner();
 }
  
-function checkSetup() {
-  if (state.assemblyKey) document.getElementById('assemblySetup').style.display = 'none';
-}
+
  
-function saveAssemblyKey() {
-  const input = document.getElementById('assemblyKeyInput').value.trim();
-  const err = document.getElementById('assemblyError');
-  if (!input || input.length < 20) { err.classList.add('visible'); return; }
-  err.classList.remove('visible');
-  state.assemblyKey = input;
-  localStorage.setItem('aai_key', input);
-  document.getElementById('assemblySetup').style.display = 'none';
-}
+
  
 function updateStreak() {
   const today = new Date().toDateString();
@@ -637,11 +626,6 @@ function startTimer() {
 }
  
 async function toggleRecord() {
-  if (!state.assemblyKey) {
-    document.getElementById('assemblySetup').style.display = 'block';
-    document.getElementById('assemblySetup').scrollIntoView({ behavior: 'smooth' });
-    return;
-  }
   if (state.isRecording) { stopRecording(); } else { startRecording(); }
 }
  
