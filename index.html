@@ -464,6 +464,10 @@
   <div class="prompt-card">
     <div class="prompt-text" id="promptText">Loading...</div>
     <div class="prompt-sub" id="promptSub"></div>
+    <div id="hintBox" style="margin-top:16px; display:none;">
+  <div style="font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:10px;">Before you speak</div>
+  <ul id="hintList" style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px;"></ul>
+</div>
   </div>
 
   <div class="record-area">
@@ -718,12 +722,78 @@ const state = {
 };
 
 const scenarios = [
-  { tag: "Intro",     prompt: "Introduce yourself as if you're meeting your new manager on the first day.", sub: "Speak for 60–90 seconds. Don't read anything.", context: "job interview / first day at work introduction" },
-  { tag: "Interview", prompt: "Tell me about a challenge you faced and how you handled it.", sub: "Common interview question. Speak naturally.", context: "behavioural interview answer (STAR format expected)" },
-  { tag: "Explain",   prompt: "Explain what you do at work (or what you studied) in simple terms.", sub: "Imagine explaining to someone outside your field.", context: "professional clarity and simplification" },
-  { tag: "Situation", prompt: "Your boss gives you a deadline you think is unrealistic. What do you say?", sub: "Handle this professionally in 45–60 seconds.", context: "workplace conflict / assertive communication" },
-  { tag: "Convince",  prompt: "Convince me why I should hire you over 10 other candidates.", sub: "You have 60 seconds. Be specific.", context: "sales pitch / self-advocacy in interview" },
-  { tag: "Opinion",   prompt: "What do you think about working in a team vs. working alone?", sub: "Share your genuine opinion with examples.", context: "opinion sharing / structured reasoning" }
+  {
+    tag: "Intro",
+    prompt: "Introduce yourself as if you're meeting your new manager on the first day.",
+    sub: "Speak for 30–45 seconds. Don't read anything.",
+    context: "job interview / first day at work introduction",
+    hints: [
+      "Start with your name, role, and where you're from — keep it under 2 sentences",
+      "Mention one professional strength or experience that's relevant to the job",
+      "End with something forward-looking — what you're excited to work on or learn"
+    ],
+    structure: "Name + background → Key strength → Forward-looking close"
+  },
+  {
+    tag: "Interview",
+    prompt: "Tell me about a challenge you faced and how you handled it.",
+    sub: "Common interview question. Use a real example.",
+    context: "behavioural interview answer (STAR format expected)",
+    hints: [
+      "Pick one specific situation — don't speak in general terms",
+      "Explain what YOU did, not what 'we' did as a team",
+      "End with the result and what you learned from it"
+    ],
+    structure: "Situation → Your action → Result + learning"
+  },
+  {
+    tag: "Explain",
+    prompt: "Explain what you do at work (or what you studied) in simple terms.",
+    sub: "Imagine explaining to someone outside your field.",
+    context: "professional clarity and simplification",
+    hints: [
+      "Avoid jargon — if your grandmother wouldn't understand it, simplify it",
+      "Use one analogy or real-world example to make it concrete",
+      "End with why it matters or what impact it has"
+    ],
+    structure: "What you do → Simple example → Why it matters"
+  },
+  {
+    tag: "Situation",
+    prompt: "Your boss gives you a deadline you think is unrealistic. What do you say?",
+    sub: "Handle this professionally in 30–45 seconds.",
+    context: "workplace conflict / assertive communication",
+    hints: [
+      "Acknowledge the deadline first — don't open with a complaint",
+      "State your concern clearly with a specific reason, not just 'it's too soon'",
+      "Offer an alternative or ask for a conversation — don't just say no"
+    ],
+    structure: "Acknowledge → Specific concern → Alternative or next step"
+  },
+  {
+    tag: "Convince",
+    prompt: "Convince me why I should hire you over 10 other candidates.",
+    sub: "You have 45 seconds. Be specific.",
+    context: "sales pitch / self-advocacy in interview",
+    hints: [
+      "Don't list generic traits like 'hardworking' or 'team player' — everyone says that",
+      "Name one specific skill or experience that directly matches the role",
+      "End with a confident close — tell them what you'll deliver, not just who you are"
+    ],
+    structure: "Unique angle → Specific proof → Confident close"
+  },
+  {
+    tag: "Opinion",
+    prompt: "What do you think about working in a team vs. working alone?",
+    sub: "Share your genuine opinion with examples.",
+    context: "opinion sharing / structured reasoning",
+    hints: [
+      "Take a clear position — don't try to please both sides equally",
+      "Back it up with one real example from your experience",
+      "Acknowledge the other side briefly, then return to your view"
+    ],
+    structure: "Your position → Real example → Brief acknowledgement of other side"
+  }
 ];
 
 // ─── INIT ──────────────────────────────────────────────────────────
@@ -803,6 +873,11 @@ function loadScenario(i) {
   document.querySelectorAll('.scenario-btn').forEach((b, idx) => b.classList.toggle('active', idx === i));
   document.getElementById('promptText').textContent = scenarios[i].prompt;
   document.getElementById('promptSub').textContent  = scenarios[i].sub;
+  const hints = scenarios[i].hints || [];
+  const hintBox = document.getElementById('hintBox');
+  const hintList = document.getElementById('hintList');
+  hintList.innerHTML = hints.map(h => `<li style="font-size:12px; color:var(--muted); line-height:1.6; padding-left:12px; border-left:2px solid var(--border);">${h}</li>`).join('');
+  hintBox.style.display = hints.length ? 'block' : 'none';
   resetUI();
 }
 
