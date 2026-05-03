@@ -5,13 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SpeakUp — Speak Better. Get Hired.</title>
 
-<!-- Firebase SDK (CDN - no bundler needed) -->
+<!-- Firebase SDK (CDN) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap');
- 
+
   :root {
     --bg: #0a0a0a;
     --surface: #111111;
@@ -24,9 +25,9 @@
     --danger: #ff4a4a;
     --success: #4aff8c;
   }
- 
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
- 
+
   body {
     background: var(--bg);
     color: var(--text);
@@ -34,7 +35,7 @@
     min-height: 100vh;
     overflow-x: hidden;
   }
- 
+
   body::before {
     content: '';
     position: fixed;
@@ -45,7 +46,7 @@
     opacity: 0.4;
   }
 
-  /* ─── LOGIN SCREEN ─── */
+  /* ─── LOGIN ─── */
   #loginScreen {
     display: flex;
     flex-direction: column;
@@ -65,218 +66,110 @@
     text-align: center;
   }
 
-  .login-logo {
-    font-family: 'Syne', sans-serif;
-    font-size: 28px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    margin-bottom: 8px;
-  }
+  .login-logo { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
   .login-logo span { color: var(--accent); }
-
-  .login-tagline {
-    font-size: 12px;
-    color: var(--muted);
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    margin-bottom: 40px;
-  }
-
-  .login-divider {
-    width: 40px;
-    height: 1px;
-    background: var(--border);
-    margin: 0 auto 32px;
-  }
-
-  .login-heading {
-    font-family: 'Syne', sans-serif;
-    font-size: 18px;
-    font-weight: 700;
-    margin-bottom: 10px;
-  }
-
-  .login-sub {
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.7;
-    margin-bottom: 32px;
-  }
+  .login-tagline { font-size: 12px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 40px; }
+  .login-divider { width: 40px; height: 1px; background: var(--border); margin: 0 auto 32px; }
+  .login-heading { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+  .login-sub { font-size: 12px; color: var(--muted); line-height: 1.7; margin-bottom: 32px; }
 
   .google-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    width: 100%;
-    padding: 14px 20px;
-    background: var(--accent);
-    color: #000;
-    border: none;
-    border-radius: 10px;
-    font-family: 'Syne', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    width: 100%; padding: 14px 20px;
+    background: var(--accent); color: #000;
+    border: none; border-radius: 10px;
+    font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
   }
-
   .google-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(232,255,74,0.25); }
-  .google-btn:active { transform: translateY(0); }
-
   .google-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
 
-  .login-error {
-    display: none;
-    margin-top: 16px;
-    font-size: 12px;
-    color: var(--danger);
-  }
+  .login-error { display: none; margin-top: 16px; font-size: 12px; color: var(--danger); }
   .login-error.visible { display: block; }
+  .login-footer { margin-top: 28px; font-size: 11px; color: var(--muted); line-height: 1.7; }
 
-  .login-footer {
-    margin-top: 28px;
-    font-size: 11px;
-    color: var(--muted);
-    line-height: 1.7;
-  }
-
-  /* ─── MAIN APP ─── */
+  /* ─── APP ─── */
   #appScreen { display: none; }
-
   .container { max-width: 680px; margin: 0 auto; padding: 24px 20px 60px; }
- 
+
   .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: flex; justify-content: space-between; align-items: center;
     padding: 20px 0 40px;
     border-bottom: 1px solid var(--border);
     margin-bottom: 40px;
   }
- 
+
   .logo { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
   .logo span { color: var(--accent); }
- 
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+  .header-right { display: flex; align-items: center; gap: 12px; }
 
   .streak-badge {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    padding: 8px 14px;
-    border-radius: 100px;
-    font-size: 12px;
-    color: var(--muted);
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 8px 14px; border-radius: 100px;
+    font-size: 12px; color: var(--muted);
   }
- 
   .streak-badge .fire { font-size: 16px; }
   .streak-badge .count { color: var(--accent); font-weight: 500; }
 
-  .user-menu {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    position: relative;
-  }
+  .user-menu { display: flex; align-items: center; gap: 8px; cursor: pointer; position: relative; }
 
-  .user-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    object-fit: cover;
-    background: var(--surface2);
-  }
-
+  .user-avatar { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); object-fit: cover; }
   .user-avatar-placeholder {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    background: var(--surface2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    color: var(--accent);
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 1px solid var(--border); background: var(--surface2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: var(--accent);
+    font-family: 'Syne', sans-serif; font-weight: 700;
   }
 
   .user-dropdown {
+    display: none; position: absolute; top: calc(100% + 8px); right: 0;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 8px; min-width: 180px;
+    z-index: 100; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .user-dropdown.open { display: block; }
+  .user-dropdown-name { padding: 8px 10px 4px; font-size: 12px; color: var(--text); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-dropdown-email { padding: 0 10px 10px; font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--border); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .signout-btn {
+    width: 100%; padding: 9px 10px;
+    background: transparent; border: none;
+    color: var(--danger); font-family: 'DM Mono', monospace;
+    font-size: 12px; text-align: left; cursor: pointer;
+    border-radius: 6px; transition: background 0.15s;
+  }
+  .signout-btn:hover { background: rgba(255,74,74,0.08); }
+
+  /* ─── STATS BAR ─── */
+  .stats-bar {
     display: none;
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 8px;
-    min-width: 180px;
-    z-index: 100;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  }
-
-  .user-dropdown.open { display: block; }
-
-  .user-dropdown-name {
-    padding: 8px 10px 4px;
-    font-size: 12px;
-    color: var(--text);
-    font-weight: 500;
-    white-space: nowrap;
+    margin-bottom: 28px;
     overflow: hidden;
-    text-overflow: ellipsis;
   }
+  .stats-bar.visible { display: flex; }
+  .stat-item {
+    flex: 1; padding: 14px 16px;
+    border-right: 1px solid var(--border);
+    text-align: center;
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-item .st-val { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; color: var(--accent); }
+  .stat-item .st-label { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
 
-  .user-dropdown-email {
-    padding: 0 10px 10px;
-    font-size: 11px;
-    color: var(--muted);
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 6px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .signout-btn {
-    width: 100%;
-    padding: 9px 10px;
-    background: transparent;
-    border: none;
-    color: var(--danger);
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    text-align: left;
-    cursor: pointer;
-    border-radius: 6px;
-    transition: background 0.15s;
-  }
-  .signout-btn:hover { background: rgba(255,74,74,0.08); }
- 
+  /* ─── PROGRESS BANNER ─── */
   .progress-banner {
     display: none;
-    background: var(--surface2);
-    border: 1px solid var(--border);
+    background: var(--surface2); border: 1px solid var(--border);
     border-left: 3px solid var(--accent);
-    padding: 16px 20px;
-    border-radius: 8px;
-    margin-bottom: 28px;
-    font-size: 13px;
+    padding: 16px 20px; border-radius: 8px; margin-bottom: 28px; font-size: 13px;
   }
- 
   .progress-banner.visible { display: block; }
   .progress-banner .label { color: var(--muted); margin-bottom: 10px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
- 
   .score-compare { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
   .score-item { display: flex; flex-direction: column; gap: 2px; }
   .score-item .day { font-size: 11px; color: var(--muted); }
@@ -284,123 +177,104 @@
   .score-item .val.up { color: var(--success); }
   .score-item .val.same { color: var(--text); }
   .score-arrow { color: var(--accent); font-size: 20px; }
-  .score-delta { color: var(--success); font-size: 13px; font-weight: 500; align-self: flex-end; padding-bottom: 4px; }
- 
+  .score-delta { font-size: 13px; font-weight: 500; align-self: flex-end; padding-bottom: 4px; }
+  .score-delta.positive { color: var(--success); }
+  .score-delta.negative { color: var(--danger); }
+
   .section-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
- 
   .scenario-nav { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
- 
+
   .scenario-btn {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    padding: 7px 14px;
-    border-radius: 100px;
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--muted); padding: 7px 14px; border-radius: 100px;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    cursor: pointer; transition: all 0.2s;
   }
- 
   .scenario-btn:hover { border-color: var(--accent); color: var(--text); }
   .scenario-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 500; }
- 
+
   .prompt-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 28px;
-    position: relative;
-    overflow: hidden;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px; margin-bottom: 28px;
+    position: relative; overflow: hidden;
   }
- 
   .prompt-card::before {
-    content: '"';
-    position: absolute;
-    top: -10px;
-    left: 16px;
-    font-size: 80px;
-    color: var(--accent);
-    opacity: 0.15;
-    font-family: 'Syne', sans-serif;
-    line-height: 1;
+    content: '"'; position: absolute; top: -10px; left: 16px;
+    font-size: 80px; color: var(--accent); opacity: 0.15;
+    font-family: 'Syne', sans-serif; line-height: 1;
   }
- 
   .prompt-text { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 600; line-height: 1.5; position: relative; z-index: 1; }
   .prompt-sub { margin-top: 10px; font-size: 12px; color: var(--muted); }
- 
+
   .record-area { text-align: center; }
- 
+
   .timer-svg { transform: rotate(-90deg); }
   .timer-track { fill: none; stroke: var(--surface2); stroke-width: 4; }
   .timer-fill {
-    fill: none;
-    stroke: var(--accent);
-    stroke-width: 4;
-    stroke-linecap: round;
-    stroke-dasharray: 283;
-    stroke-dashoffset: 283;
+    fill: none; stroke: var(--accent); stroke-width: 4;
+    stroke-linecap: round; stroke-dasharray: 283; stroke-dashoffset: 283;
     transition: stroke-dashoffset 1s linear;
   }
   .timer-fill.recording { stroke: var(--danger); }
   .timer-label { position: absolute; display: flex; flex-direction: column; align-items: center; }
   .timer-num { font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 700; line-height: 1; }
   .timer-unit { font-size: 11px; color: var(--muted); margin-top: 2px; }
- 
+
   .record-btn {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    border: none;
-    background: var(--accent);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    width: 80px; height: 80px; border-radius: 50%; border: none;
+    background: var(--accent); cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
     transition: all 0.2s;
   }
- 
   .record-btn:hover { transform: scale(1.05); }
-  .record-btn.recording { background: var(--danger); animation: pulse 1.5s infinite; box-shadow: 0 0 0 8px rgba(255,74,74,0.15); }
+  .record-btn.recording { background: var(--danger); animation: pulse 1.5s infinite; }
   .record-btn.disabled { background: var(--surface2); cursor: not-allowed; opacity: 0.5; }
- 
+
   @keyframes pulse {
     0%, 100% { box-shadow: 0 0 0 0 rgba(255,74,74,0.4); }
     50% { box-shadow: 0 0 0 16px rgba(255,74,74,0); }
   }
- 
+
   .record-icon { width: 28px; height: 28px; }
   .record-status { margin-top: 14px; font-size: 13px; color: var(--muted); min-height: 20px; }
   .record-status.active { color: var(--danger); }
   .record-status.processing { color: var(--accent); }
- 
-  .transcript-box {
+
+  .replay-btn {
     display: none;
-    background: var(--surface2);
+    margin: 12px auto 0;
+    padding: 8px 18px;
+    background: transparent;
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-    margin: 20px 0;
-    font-size: 13px;
-    line-height: 1.7;
+    border-radius: 100px;
     color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
   }
- 
+  .replay-btn.visible { display: inline-flex; align-items: center; gap: 6px; }
+  .replay-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .transcript-box {
+    display: none; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px; margin: 20px 0;
+    font-size: 13px; line-height: 1.7;
+  }
   .transcript-box.visible { display: block; }
   .transcript-box .t-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
   .transcript-box .t-text { color: var(--text); }
- 
+
   .feedback-section { display: none; margin-top: 32px; animation: fadeUp 0.4s ease; }
   .feedback-section.visible { display: block; }
- 
+
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(16px); }
     to { opacity: 1; transform: translateY(0); }
   }
- 
+
   .score-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
- 
+
   .score-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
   .score-card .sc-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
   .score-card .sc-val { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 700; line-height: 1; }
@@ -408,111 +282,75 @@
   .score-card .sc-val.mid { color: var(--accent); }
   .score-card .sc-val.bad { color: var(--danger); }
   .score-card .sc-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
- 
+  .sc-bench { font-size: 10px; margin-top: 6px; padding: 3px 8px; border-radius: 100px; display: inline-block; }
+  .sc-bench.excellent { background: rgba(74,255,140,0.12); color: var(--success); }
+  .sc-bench.strong { background: rgba(232,255,74,0.12); color: var(--accent); }
+  .sc-bench.average { background: rgba(255,107,53,0.12); color: var(--accent2); }
+  .sc-bench.below { background: rgba(255,74,74,0.12); color: var(--danger); }
+
   .fixes-box { background: var(--surface); border: 1px solid var(--accent); border-radius: 10px; padding: 18px 20px; margin-bottom: 20px; }
   .fixes-box .fx-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
- 
   .fix-item { display: flex; gap: 10px; font-size: 13px; line-height: 1.5; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
   .fix-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
   .fix-num { color: var(--accent); font-weight: 500; min-width: 18px; }
- 
+
   .better-box { background: var(--surface2); border: 1px solid var(--border); border-left: 3px solid var(--success); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
   .better-box .bv-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--success); margin-bottom: 12px; }
   .better-box .bv-text { font-size: 14px; line-height: 1.8; color: var(--text); font-style: italic; }
- 
+
   .micro-win {
     display: none;
     background: linear-gradient(135deg, rgba(74,255,140,0.08), rgba(232,255,74,0.06));
     border: 1px solid rgba(74,255,140,0.2);
-    border-radius: 10px;
-    padding: 16px 20px;
-    margin-bottom: 20px;
-    font-size: 13px;
-    color: var(--success);
+    border-radius: 10px; padding: 16px 20px; margin-bottom: 20px;
+    font-size: 13px; color: var(--success);
   }
   .micro-win.visible { display: block; }
- 
+
   .retry-btn {
-    width: 100%;
-    padding: 16px;
-    background: var(--accent);
-    color: #000;
-    border: none;
-    border-radius: 10px;
-    font-family: 'Syne', sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-bottom: 12px;
+    width: 100%; padding: 16px; background: var(--accent); color: #000;
+    border: none; border-radius: 10px;
+    font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s; margin-bottom: 12px;
   }
   .retry-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(232,255,74,0.2); }
- 
+
   .new-prompt-btn {
-    width: 100%;
-    padding: 14px;
-    background: transparent;
-    color: var(--muted);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s;
+    width: 100%; padding: 14px; background: transparent;
+    color: var(--muted); border: 1px solid var(--border);
+    border-radius: 10px; font-family: 'DM Mono', monospace;
+    font-size: 13px; cursor: pointer; transition: all 0.2s;
   }
   .new-prompt-btn:hover { border-color: var(--text); color: var(--text); }
- 
+
   .feedback-capture { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-top: 20px; }
   .feedback-capture.visible { display: block; }
   .feedback-capture .fc-label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
   .fc-q { font-size: 14px; margin-bottom: 10px; }
   .fc-options { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
- 
   .fc-opt {
-    padding: 8px 16px;
-    border: 1px solid var(--border);
-    border-radius: 100px;
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    background: var(--surface2);
-    color: var(--text);
-    cursor: pointer;
-    transition: all 0.15s;
+    padding: 8px 16px; border: 1px solid var(--border); border-radius: 100px;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    background: var(--surface2); color: var(--text);
+    cursor: pointer; transition: all 0.15s;
   }
   .fc-opt:hover, .fc-opt.selected { border-color: var(--accent); color: var(--accent); }
- 
   .fc-text {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px;
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    resize: none;
-    min-height: 72px;
-    margin-bottom: 12px;
-    outline: none;
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px; color: var(--text);
+    font-family: 'DM Mono', monospace; font-size: 13px;
+    resize: none; min-height: 72px; margin-bottom: 12px; outline: none;
   }
   .fc-text:focus { border-color: var(--accent); }
- 
   .fc-submit {
-    padding: 10px 20px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.15s;
+    padding: 10px 20px; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); font-family: 'DM Mono', monospace;
+    font-size: 12px; cursor: pointer; transition: all 0.15s;
   }
   .fc-submit:hover { border-color: var(--accent); color: var(--accent); }
- 
+
   .waveform { display: none; justify-content: center; align-items: center; gap: 4px; height: 32px; margin: 12px 0; }
   .waveform.active { display: flex; }
- 
   .wave-bar { width: 3px; background: var(--danger); border-radius: 2px; animation: wave 0.8s ease-in-out infinite; }
   .wave-bar:nth-child(1) { animation-delay: 0s; height: 8px; }
   .wave-bar:nth-child(2) { animation-delay: 0.1s; height: 20px; }
@@ -522,33 +360,34 @@
   .wave-bar:nth-child(6) { animation-delay: 0.5s; height: 12px; }
   .wave-bar:nth-child(7) { animation-delay: 0.3s; height: 22px; }
   .wave-bar:nth-child(8) { animation-delay: 0.15s; height: 10px; }
- 
+
   @keyframes wave {
     0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
     50% { transform: scaleY(1); opacity: 1; }
   }
- 
+
   @media (max-width: 480px) {
     .score-grid { grid-template-columns: repeat(2, 1fr); }
     .prompt-text { font-size: 16px; }
     .login-card { padding: 36px 24px; }
+    .stats-bar { flex-wrap: wrap; }
+    .stat-item { min-width: 50%; }
   }
- 
+
   .hidden { display: none !important; }
 </style>
 </head>
 <body>
 
-<!-- ─── LOGIN SCREEN ─── -->
+<!-- ─── LOGIN ─── -->
 <div id="loginScreen">
   <div class="login-card">
     <div class="login-logo">Speak<span>Up</span></div>
     <div class="login-tagline">Speak Better. Get Hired.</div>
     <div class="login-divider"></div>
     <div class="login-heading">Welcome back</div>
-    <div class="login-sub">Sign in to track your progress,<br>streaks, and improvement over time.</div>
+    <div class="login-sub">Sign in to track your progress,<br>streaks, and scores across devices.</div>
     <button class="google-btn" onclick="signInWithGoogle()">
-      <!-- Google G logo SVG -->
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
         <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -558,14 +397,14 @@
       Continue with Google
     </button>
     <div class="login-error" id="loginError"></div>
-    <div class="login-footer">Your data stays private. We only use your<br>Google account to save your progress.</div>
+    <div class="login-footer">Your progress is saved securely to your account<br>and syncs across all your devices.</div>
   </div>
 </div>
 
-<!-- ─── MAIN APP ─── -->
+<!-- ─── APP ─── -->
 <div id="appScreen">
 <div class="container">
- 
+
   <div class="header">
     <div class="logo">Speak<span>Up</span></div>
     <div class="header-right">
@@ -574,7 +413,6 @@
         <span class="count" id="streakCount">0</span>
         <span>day streak</span>
       </div>
-      <!-- User avatar + dropdown -->
       <div class="user-menu" id="userMenu" onclick="toggleDropdown()">
         <img class="user-avatar" id="userAvatar" src="" alt="" style="display:none;">
         <div class="user-avatar-placeholder" id="userInitial"></div>
@@ -586,32 +424,49 @@
       </div>
     </div>
   </div>
- 
+
+  <!-- Stats bar -->
+  <div class="stats-bar" id="statsBar">
+    <div class="stat-item">
+      <div class="st-val" id="statSessions">0</div>
+      <div class="st-label">Sessions</div>
+    </div>
+    <div class="stat-item">
+      <div class="st-val" id="statBest">—</div>
+      <div class="st-label">Best Score</div>
+    </div>
+    <div class="stat-item">
+      <div class="st-val" id="statAvg">—</div>
+      <div class="st-label">Avg Score</div>
+    </div>
+  </div>
+
+  <!-- Progress banner -->
   <div class="progress-banner" id="progressBanner">
     <div class="label">📈 Your Progress</div>
     <div class="score-compare">
       <div class="score-item">
-        <span class="day">Yesterday</span>
-        <span class="val same" id="prevScore">—</span>
+        <span class="day">Last session</span>
+        <span class="val same" id="prevScoreDisplay">—</span>
       </div>
       <span class="score-arrow">→</span>
       <div class="score-item">
-        <span class="day">Today</span>
-        <span class="val up" id="todayScore">—</span>
+        <span class="day">This session</span>
+        <span class="val up" id="todayScoreDisplay">—</span>
       </div>
-      <span class="score-delta" id="scoreDelta"></span>
+      <span class="score-delta" id="scoreDeltaDisplay"></span>
     </div>
   </div>
- 
+
   <div class="section-label">Choose your scenario</div>
   <div class="scenario-nav" id="scenarioNav"></div>
- 
-  <div class="prompt-card" id="promptCard">
+
+  <div class="prompt-card">
     <div class="prompt-text" id="promptText">Loading...</div>
     <div class="prompt-sub" id="promptSub"></div>
   </div>
- 
-  <div class="record-area" id="recordArea">
+
+  <div class="record-area">
     <div style="position:relative; display:inline-flex; align-items:center; justify-content:center;">
       <svg class="timer-svg" width="120" height="120" viewBox="0 0 100 100">
         <circle class="timer-track" cx="50" cy="50" r="45"/>
@@ -622,14 +477,14 @@
         <span class="timer-unit">sec</span>
       </div>
     </div>
- 
+
     <div class="waveform" id="waveform">
       <div class="wave-bar"></div><div class="wave-bar"></div>
       <div class="wave-bar"></div><div class="wave-bar"></div>
       <div class="wave-bar"></div><div class="wave-bar"></div>
       <div class="wave-bar"></div><div class="wave-bar"></div>
     </div>
- 
+
     <br>
     <button class="record-btn" id="recordBtn" onclick="toggleRecord()">
       <svg class="record-icon" viewBox="0 0 24 24" fill="none">
@@ -637,57 +492,62 @@
         <path d="M19 11a7 7 0 01-14 0M12 18v3M9 21h6" stroke="#000" stroke-width="2" stroke-linecap="round"/>
       </svg>
     </button>
- 
+
     <div class="record-status" id="recordStatus">Tap to start speaking</div>
+    <button class="replay-btn" id="replayBtn" onclick="replayAudio()">▶ Replay your answer</button>
   </div>
- 
+
   <div class="transcript-box" id="transcriptBox">
     <div class="t-label">What we heard</div>
     <div class="t-text" id="transcriptText"></div>
   </div>
- 
+
   <div class="feedback-section" id="feedbackSection">
     <div class="section-label" style="margin-bottom:16px">Your Analysis</div>
- 
+
     <div class="score-grid">
       <div class="score-card">
         <div class="sc-label">Confidence</div>
         <div class="sc-val" id="scoreConfidence">—</div>
         <div class="sc-sub">out of 10</div>
+        <div class="sc-bench" id="benchConfidence"></div>
       </div>
       <div class="score-card">
         <div class="sc-label">Filler Words</div>
         <div class="sc-val" id="scoreFillers">—</div>
         <div class="sc-sub" id="fillerSub">detected</div>
+        <div class="sc-bench" id="benchFillers"></div>
       </div>
       <div class="score-card">
         <div class="sc-label">Clarity</div>
         <div class="sc-val" id="scoreClarity">—</div>
         <div class="sc-sub">out of 10</div>
+        <div class="sc-bench" id="benchClarity"></div>
       </div>
       <div class="score-card">
         <div class="sc-label">Pace</div>
         <div class="sc-val" id="scorePace">—</div>
         <div class="sc-sub" id="paceSub">words/min</div>
+        <div class="sc-bench" id="benchPace"></div>
       </div>
     </div>
- 
+
     <div class="fixes-box">
       <div class="fx-label">Top 2 things to fix next time</div>
       <div class="fix-item"><span class="fix-num">01</span><span id="fix1">—</span></div>
       <div class="fix-item"><span class="fix-num">02</span><span id="fix2">—</span></div>
     </div>
- 
+
     <div class="better-box">
       <div class="bv-label">How a confident speaker would say this</div>
       <div class="bv-text" id="betterVersion">—</div>
     </div>
- 
+
     <div class="micro-win" id="microWin"></div>
- 
+
     <button class="retry-btn" onclick="retryPrompt()">↺ Try Again — Beat Your Score</button>
     <button class="new-prompt-btn" onclick="nextPrompt()">Next Scenario →</button>
- 
+
     <div class="feedback-capture" id="feedbackCapture">
       <div class="fc-label">Quick feedback (helps us improve)</div>
       <div class="fc-q">Was this useful?</div>
@@ -700,12 +560,12 @@
       <button class="fc-submit" onclick="submitFeedback()">Submit →</button>
     </div>
   </div>
- 
+
 </div>
 </div><!-- end #appScreen -->
 
 <script>
-// ─── FIREBASE CONFIG ───────────────────────────────────────────────
+// ─── FIREBASE INIT ─────────────────────────────────────────────────
 const firebaseConfig = {
   apiKey: "AIzaSyDe9ekuH8v5Oz8YOI59meQ_YzU5GZRSEbk",
   authDomain: "speakup-e1a51.firebaseapp.com",
@@ -717,15 +577,15 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
+const db   = firebase.firestore();
 const provider = new firebase.auth.GoogleAuthProvider();
 
-// ─── AUTH FUNCTIONS ────────────────────────────────────────────────
+// ─── AUTH ──────────────────────────────────────────────────────────
 function signInWithGoogle() {
-  const errEl = document.getElementById('loginError');
-  errEl.classList.remove('visible');
+  document.getElementById('loginError').classList.remove('visible');
   auth.signInWithPopup(provider).catch(err => {
-    errEl.textContent = 'Sign-in failed. Please try again.';
-    errEl.classList.add('visible');
+    document.getElementById('loginError').textContent = 'Sign-in failed. Please try again.';
+    document.getElementById('loginError').classList.add('visible');
     console.error(err);
   });
 }
@@ -739,30 +599,26 @@ function toggleDropdown() {
   document.getElementById('userDropdown').classList.toggle('open');
 }
 
-// Close dropdown when clicking outside
-document.addEventListener('click', (e) => {
+document.addEventListener('click', e => {
   const menu = document.getElementById('userMenu');
   if (menu && !menu.contains(e.target)) {
     document.getElementById('userDropdown').classList.remove('open');
   }
 });
 
-// ─── AUTH STATE LISTENER ───────────────────────────────────────────
 auth.onAuthStateChanged(user => {
   if (user) {
-    // Show app, hide login
     document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('appScreen').style.display = 'block';
+    document.getElementById('appScreen').style.display  = 'block';
 
-    // Populate user UI
-    const name = user.displayName || 'User';
-    const email = user.email || '';
-    const photo = user.photoURL;
+    const name    = user.displayName || 'User';
+    const email   = user.email || '';
+    const photo   = user.photoURL;
     const initial = name.charAt(0).toUpperCase();
 
-    document.getElementById('dropdownName').textContent = name;
+    document.getElementById('dropdownName').textContent  = name;
     document.getElementById('dropdownEmail').textContent = email;
-    document.getElementById('userInitial').textContent = initial;
+    document.getElementById('userInitial').textContent   = initial;
 
     if (photo) {
       const img = document.getElementById('userAvatar');
@@ -771,66 +627,164 @@ auth.onAuthStateChanged(user => {
       document.getElementById('userInitial').style.display = 'none';
     }
 
-    // Boot the app
+    state.uid = user.uid;
     init();
-
   } else {
-    // Show login, hide app
     document.getElementById('loginScreen').style.display = 'flex';
-    document.getElementById('appScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display   = 'none';
+    state.uid = null;
   }
 });
 
-// ─── APP CODE (unchanged) ──────────────────────────────────────────
+// ─── FIRESTORE HELPERS ─────────────────────────────────────────────
+function sessionsRef(uid) {
+  return db.collection('users').doc(uid).collection('sessions');
+}
+
+async function saveSession(uid, data) {
+  try {
+    await sessionsRef(uid).add(data);
+  } catch (e) {
+    console.warn('Firestore save failed:', e);
+  }
+}
+
+async function getLastSession(uid) {
+  try {
+    const snap = await sessionsRef(uid)
+      .orderBy('timestamp', 'desc')
+      .limit(1)
+      .get();
+    if (snap.empty) return null;
+    return snap.docs[0].data();
+  } catch (e) {
+    console.warn('Firestore read failed:', e);
+    return null;
+  }
+}
+
+async function getSessionStats(uid) {
+  try {
+    const snap = await sessionsRef(uid).get();
+    if (snap.empty) return null;
+    const scores = snap.docs.map(d => d.data().scores?.overall).filter(Boolean);
+    return {
+      total: snap.size,
+      best:  scores.length ? Math.max(...scores) : 0,
+      avg:   scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0
+    };
+  } catch (e) {
+    console.warn('Firestore stats failed:', e);
+    return null;
+  }
+}
+
+async function getStreakData(uid) {
+  try {
+    const doc = await db.collection('users').doc(uid).get();
+    if (doc.exists && doc.data().streak !== undefined) return doc.data();
+    return { streak: 0, lastDate: '' };
+  } catch (e) {
+    return { streak: 0, lastDate: '' };
+  }
+}
+
+async function saveStreakData(uid, data) {
+  try {
+    await db.collection('users').doc(uid).set(data, { merge: true });
+  } catch (e) {
+    console.warn('Streak save failed:', e);
+  }
+}
+
+// ─── APP STATE ─────────────────────────────────────────────────────
 const BACKEND = 'https://speakup-backend-vert.vercel.app';
- 
+
 const state = {
+  uid: null,
   currentScenario: 0,
-  sessionCount: parseInt(localStorage.getItem('sessionCount') || '0'),
-  streak: parseInt(localStorage.getItem('streak') || '0'),
-  lastDate: localStorage.getItem('lastDate') || '',
-  prevScore: parseFloat(localStorage.getItem('prevScore') || '0'),
-  currentSessionScore: 0,
+  isRecording: false,
   mediaRecorder: null,
   audioChunks: [],
-  isRecording: false,
+  audioBlob: null,
+  audioMimeType: '',
   timerInterval: null,
   timeLeft: 90,
   maxTime: 90,
   feedbackChoice: '',
-  sessionHistory: JSON.parse(localStorage.getItem('sessionHistory') || '[]'),
+  currentSessionScore: 0,
+  lastSessionScore: 0,
 };
- 
+
 const scenarios = [
-  { tag: "Intro", prompt: "Introduce yourself as if you're meeting your new manager on the first day.", sub: "Speak for 60–90 seconds. Don't read anything.", context: "job interview / first day at work introduction" },
+  { tag: "Intro",     prompt: "Introduce yourself as if you're meeting your new manager on the first day.", sub: "Speak for 60–90 seconds. Don't read anything.", context: "job interview / first day at work introduction" },
   { tag: "Interview", prompt: "Tell me about a challenge you faced and how you handled it.", sub: "Common interview question. Speak naturally.", context: "behavioural interview answer (STAR format expected)" },
-  { tag: "Explain", prompt: "Explain what you do at work (or what you studied) in simple terms.", sub: "Imagine explaining to someone outside your field.", context: "professional clarity and simplification" },
+  { tag: "Explain",   prompt: "Explain what you do at work (or what you studied) in simple terms.", sub: "Imagine explaining to someone outside your field.", context: "professional clarity and simplification" },
   { tag: "Situation", prompt: "Your boss gives you a deadline you think is unrealistic. What do you say?", sub: "Handle this professionally in 45–60 seconds.", context: "workplace conflict / assertive communication" },
-  { tag: "Convince", prompt: "Convince me why I should hire you over 10 other candidates.", sub: "You have 60 seconds. Be specific.", context: "sales pitch / self-advocacy in interview" },
-  { tag: "Opinion", prompt: "What do you think about working in a team vs. working alone?", sub: "Share your genuine opinion with examples.", context: "opinion sharing / structured reasoning" }
+  { tag: "Convince",  prompt: "Convince me why I should hire you over 10 other candidates.", sub: "You have 60 seconds. Be specific.", context: "sales pitch / self-advocacy in interview" },
+  { tag: "Opinion",   prompt: "What do you think about working in a team vs. working alone?", sub: "Share your genuine opinion with examples.", context: "opinion sharing / structured reasoning" }
 ];
- 
-function init() {
-  updateStreak();
+
+// ─── INIT ──────────────────────────────────────────────────────────
+async function init() {
   renderScenarios();
   loadScenario(0);
-  showProgressBanner();
+  await updateStreak();
+  await renderStatsBar();
+  // Pre-load last session score for delta comparison
+  const last = await getLastSession(state.uid);
+  state.lastSessionScore = last ? (last.scores?.overall || 0) : 0;
 }
 
-function updateStreak() {
+// ─── STREAK ────────────────────────────────────────────────────────
+async function updateStreak() {
+  const uid = state.uid;
+  if (!uid) return;
+  const data  = await getStreakData(uid);
   const today = new Date().toDateString();
-  if (state.lastDate !== today) {
+
+  if (data.lastDate !== today) {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    if (state.lastDate === yesterday.toDateString()) { state.streak += 1; }
-    else if (state.lastDate !== '') { state.streak = 1; }
-    state.lastDate = today;
-    localStorage.setItem('lastDate', today);
-    localStorage.setItem('streak', state.streak);
+    if (data.lastDate === yesterday.toDateString()) { data.streak = (data.streak || 0) + 1; }
+    else { data.streak = 1; }
+    data.lastDate = today;
+    await saveStreakData(uid, data);
   }
-  document.getElementById('streakCount').textContent = state.streak || 0;
+  document.getElementById('streakCount').textContent = data.streak || 0;
 }
- 
+
+// ─── STATS BAR ─────────────────────────────────────────────────────
+async function renderStatsBar() {
+  const uid = state.uid;
+  if (!uid) return;
+  const stats = await getSessionStats(uid);
+  if (!stats || stats.total === 0) return;
+
+  document.getElementById('statSessions').textContent = stats.total;
+  document.getElementById('statBest').textContent     = stats.best.toFixed(1);
+  document.getElementById('statAvg').textContent      = stats.avg.toFixed(1);
+  document.getElementById('statsBar').classList.add('visible');
+}
+
+// ─── PROGRESS BANNER ───────────────────────────────────────────────
+function showProgressBanner(prevScore, currScore) {
+  if (!prevScore || !currScore) return;
+  const delta = (currScore - prevScore).toFixed(1);
+  document.getElementById('prevScoreDisplay').textContent = prevScore.toFixed(1);
+  document.getElementById('todayScoreDisplay').textContent = currScore.toFixed(1);
+  const deltaEl = document.getElementById('scoreDeltaDisplay');
+  if (delta > 0) {
+    deltaEl.textContent = `+${delta} ↑`;
+    deltaEl.className = 'score-delta positive';
+  } else {
+    deltaEl.textContent = `${delta} ↓`;
+    deltaEl.className = 'score-delta negative';
+  }
+  document.getElementById('progressBanner').classList.add('visible');
+}
+
+// ─── SCENARIOS ─────────────────────────────────────────────────────
 function renderScenarios() {
   const nav = document.getElementById('scenarioNav');
   nav.innerHTML = '';
@@ -842,35 +796,28 @@ function renderScenarios() {
     nav.appendChild(btn);
   });
 }
- 
+
 function loadScenario(i) {
   state.currentScenario = i;
   document.querySelectorAll('.scenario-btn').forEach((b, idx) => b.classList.toggle('active', idx === i));
   document.getElementById('promptText').textContent = scenarios[i].prompt;
-  document.getElementById('promptSub').textContent = scenarios[i].sub;
+  document.getElementById('promptSub').textContent  = scenarios[i].sub;
   resetUI();
 }
- 
+
 function resetUI() {
   document.getElementById('feedbackSection').classList.remove('visible');
   document.getElementById('transcriptBox').classList.remove('visible');
   document.getElementById('microWin').classList.remove('visible');
   document.getElementById('feedbackCapture').classList.remove('visible');
+  document.getElementById('progressBanner').classList.remove('visible');
+  document.getElementById('replayBtn').classList.remove('visible');
   document.getElementById('recordStatus').textContent = 'Tap to start speaking';
-  document.getElementById('recordStatus').className = 'record-status';
+  document.getElementById('recordStatus').className   = 'record-status';
   resetTimer();
 }
- 
-function showProgressBanner() {
-  if (state.prevScore > 0 && state.currentSessionScore > 0) {
-    const delta = (state.currentSessionScore - state.prevScore).toFixed(1);
-    document.getElementById('prevScore').textContent = state.prevScore.toFixed(1);
-    document.getElementById('todayScore').textContent = state.currentSessionScore.toFixed(1);
-    document.getElementById('scoreDelta').textContent = delta > 0 ? `+${delta} ↑` : `${delta}`;
-    document.getElementById('progressBanner').classList.add('visible');
-  }
-}
- 
+
+// ─── TIMER ─────────────────────────────────────────────────────────
 function resetTimer() {
   clearInterval(state.timerInterval);
   state.timeLeft = state.maxTime;
@@ -879,13 +826,13 @@ function resetTimer() {
   document.getElementById('waveform').classList.remove('active');
   document.getElementById('recordBtn').className = 'record-btn';
 }
- 
+
 function updateTimerDisplay() {
   document.getElementById('timerNum').textContent = state.timeLeft;
   const progress = (state.maxTime - state.timeLeft) / state.maxTime;
   document.getElementById('timerFill').style.strokeDashoffset = 283 * (1 - progress);
 }
- 
+
 function startTimer() {
   state.timerInterval = setInterval(() => {
     state.timeLeft--;
@@ -893,197 +840,288 @@ function startTimer() {
     if (state.timeLeft <= 0) stopRecording();
   }, 1000);
 }
- 
+
+// ─── RECORDING ─────────────────────────────────────────────────────
 async function toggleRecord() {
   if (state.isRecording) { stopRecording(); } else { startRecording(); }
 }
- 
+
 async function startRecording() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     state.audioChunks = [];
- 
+    state.audioBlob   = null;
+
     const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm'
       : MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '';
- 
-    state.mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
-    state.audioMimeType = state.mediaRecorder.mimeType || mimeType || 'audio/webm';
+
+    state.mediaRecorder   = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+    state.audioMimeType   = state.mediaRecorder.mimeType || mimeType || 'audio/webm';
     state.mediaRecorder.ondataavailable = e => { if (e.data.size > 0) state.audioChunks.push(e.data); };
     state.mediaRecorder.onstop = processAudio;
     state.mediaRecorder.start(250);
     state.isRecording = true;
-    state.timeLeft = state.maxTime;
- 
-    document.getElementById('recordBtn').className = 'record-btn recording';
+    state.timeLeft    = state.maxTime;
+
+    document.getElementById('recordBtn').className   = 'record-btn recording';
     document.getElementById('timerFill').classList.add('recording');
     document.getElementById('waveform').classList.add('active');
     document.getElementById('recordStatus').textContent = 'Recording... tap to stop';
-    document.getElementById('recordStatus').className = 'record-status active';
+    document.getElementById('recordStatus').className   = 'record-status active';
     document.getElementById('feedbackSection').classList.remove('visible');
     document.getElementById('transcriptBox').classList.remove('visible');
- 
+    document.getElementById('replayBtn').classList.remove('visible');
+
     startTimer();
   } catch (e) {
     document.getElementById('recordStatus').textContent = 'Microphone access denied. Please allow mic.';
   }
 }
- 
+
 function stopRecording() {
   if (!state.isRecording) return;
   clearInterval(state.timerInterval);
   state.isRecording = false;
   state.mediaRecorder.stop();
   state.mediaRecorder.stream.getTracks().forEach(t => t.stop());
- 
+
   document.getElementById('recordBtn').className = 'record-btn disabled';
   document.getElementById('waveform').classList.remove('active');
   document.getElementById('timerFill').classList.remove('recording');
   document.getElementById('recordStatus').textContent = 'Processing your audio...';
-  document.getElementById('recordStatus').className = 'record-status processing';
+  document.getElementById('recordStatus').className   = 'record-status processing';
 }
- 
+
+function replayAudio() {
+  if (!state.audioBlob) return;
+  const url   = URL.createObjectURL(state.audioBlob);
+  const audio = new Audio(url);
+  audio.play();
+}
+
+// ─── PROCESS AUDIO ─────────────────────────────────────────────────
 async function processAudio() {
-  const blob = new Blob(state.audioChunks, { type: state.audioMimeType || 'audio/mp4' });
- 
+  const blob    = new Blob(state.audioChunks, { type: state.audioMimeType || 'audio/mp4' });
+  state.audioBlob = blob;
+
   try {
     document.getElementById('recordStatus').textContent = 'Uploading audio...';
- 
+
     const transcribeRes = await fetch(BACKEND + '/api/transcribe', {
       method: 'POST',
       body: blob
     });
- 
+
     if (!transcribeRes.ok) {
       const err = await transcribeRes.json();
       throw new Error(err.error || 'Upload failed');
     }
- 
+
     const { id } = await transcribeRes.json();
     document.getElementById('recordStatus').textContent = 'Transcribing your speech...';
- 
+
     let transcript = null;
+    let elapsed    = 0;
+
     for (let i = 0; i < 20; i++) {
       await sleep(3000);
-      const statusRes = await fetch(BACKEND + '/api/status?id=' + id);
+      elapsed += 3;
+
+      if (elapsed === 15) {
+        document.getElementById('recordStatus').textContent = 'Taking longer than usual, please wait...';
+      }
+
+      const statusRes  = await fetch(BACKEND + '/api/status?id=' + id);
       const statusData = await statusRes.json();
       if (statusData.status === 'completed') { transcript = statusData.text; break; }
       if (statusData.status === 'error') throw new Error('Transcription failed. Try again.');
     }
- 
+
     if (!transcript) throw new Error('Took too long. Please try again.');
     if (transcript.trim().length < 5) throw new Error("Couldn't hear you clearly. Try speaking closer to the mic.");
- 
+
     document.getElementById('transcriptText').textContent = transcript;
     document.getElementById('transcriptBox').classList.add('visible');
- 
+    document.getElementById('replayBtn').classList.add('visible');
+
     document.getElementById('recordStatus').textContent = 'Analysing your speech...';
     await getFeedback(transcript);
- 
+
   } catch (err) {
-    document.getElementById('recordBtn').className = 'record-btn';
+    document.getElementById('recordBtn').className   = 'record-btn';
+    document.getElementById('replayBtn').classList.add('visible');
     document.getElementById('recordStatus').textContent = '⚠ ' + err.message;
-    document.getElementById('recordStatus').className = 'record-status';
+    document.getElementById('recordStatus').className   = 'record-status';
   }
 }
- 
+
+// ─── FEEDBACK ──────────────────────────────────────────────────────
 async function getFeedback(transcript) {
-  const scenario = scenarios[state.currentScenario];
+  const scenario   = scenarios[state.currentScenario];
   const spokenWords = transcript.split(' ').length;
-  const duration = (state.maxTime - state.timeLeft) || 60;
-  const wpm = Math.round((spokenWords / duration) * 60);
- 
+  const duration   = (state.maxTime - state.timeLeft) || 60;
+  const wpm        = Math.round((spokenWords / duration) * 60);
+
   const res = await fetch(BACKEND + '/api/feedback', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ transcript, scenario, wpm, duration })
   });
- 
+
   if (!res.ok) {
     const err = await res.json();
     throw new Error(err.error || 'Feedback failed');
   }
- 
+
   const feedback = await res.json();
-  renderFeedback(feedback);
+  await renderFeedback(feedback, transcript, wpm, duration);
 }
- 
+
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
- 
-function renderFeedback(f) {
-  const conf = f.confidence_score;
-  const clar = f.clarity_score;
-  const overall = f.overall_score || ((conf + clar) / 2).toFixed(1);
- 
-  setScoreEl('scoreConfidence', conf, 10);
-  setScoreEl('scoreClarity', clar, 10);
- 
+
+// ─── RENDER FEEDBACK ───────────────────────────────────────────────
+async function renderFeedback(f, transcript, wpm, duration) {
+  const conf    = parseFloat(f.confidence_score);
+  const clar    = parseFloat(f.clarity_score);
+  const overall = f.overall_score
+    ? parseFloat(f.overall_score)
+    : parseFloat(((conf + clar) / 2).toFixed(1));
+
+  setScoreEl('scoreConfidence', conf, 10, 'benchConfidence');
+  setScoreEl('scoreClarity',    clar, 10, 'benchClarity');
+
   document.getElementById('scoreFillers').textContent = f.filler_count;
-  document.getElementById('scoreFillers').className = 'sc-val ' + (f.filler_count > 8 ? 'bad' : f.filler_count > 3 ? 'mid' : 'good');
-  document.getElementById('fillerSub').textContent = f.filler_words || 'detected';
- 
-  document.getElementById('scorePace').textContent = f.pace_wpm;
-  document.getElementById('scorePace').className = 'sc-val ' + (f.pace_label === 'good' ? 'good' : 'mid');
-  document.getElementById('paceSub').textContent = f.pace_label + ' pace';
- 
-  document.getElementById('fix1').textContent = f.fix_1;
-  document.getElementById('fix2').textContent = f.fix_2;
+  document.getElementById('scoreFillers').className   = 'sc-val ' + (f.filler_count > 8 ? 'bad' : f.filler_count > 3 ? 'mid' : 'good');
+  document.getElementById('fillerSub').textContent    = f.filler_words || 'detected';
+  setBenchFiller('benchFillers', f.filler_count);
+
+  document.getElementById('scorePace').textContent = f.pace_wpm || wpm;
+  document.getElementById('scorePace').className   = 'sc-val ' + (f.pace_label === 'good' ? 'good' : 'mid');
+  document.getElementById('paceSub').textContent   = (f.pace_label || '') + ' pace';
+  setBenchPace('benchPace', f.pace_label);
+
+  document.getElementById('fix1').textContent         = f.fix_1;
+  document.getElementById('fix2').textContent         = f.fix_2;
   document.getElementById('betterVersion').textContent = f.better_version;
- 
-  if (state.prevScore > 0 && overall > state.prevScore) {
-    const delta = (overall - state.prevScore).toFixed(1);
-    const win = document.getElementById('microWin');
-    win.textContent = `🎯 You improved by +${delta} points from your last session. Keep going.`;
+
+  state.currentSessionScore = overall;
+
+  // Beat your score — compare against pre-loaded last session score
+  if (state.lastSessionScore > 0 && overall > state.lastSessionScore) {
+    const delta = (overall - state.lastSessionScore).toFixed(1);
+    const win   = document.getElementById('microWin');
+    win.textContent = `🎯 You beat your last score by +${delta} points. Keep going.`;
     win.classList.add('visible');
   }
- 
-  state.prevScore = parseFloat(overall);
-  state.currentSessionScore = parseFloat(overall);
-  localStorage.setItem('prevScore', overall);
- 
-  state.sessionCount++;
-  localStorage.setItem('sessionCount', state.sessionCount);
-  updateStreak();
-  showProgressBanner();
- 
-  if (state.sessionCount % 3 === 0) document.getElementById('feedbackCapture').classList.add('visible');
- 
+
+  // Save to Firestore
+  const sessionData = {
+    timestamp:    firebase.firestore.FieldValue.serverTimestamp(),
+    scenario:     scenarios[state.currentScenario].tag,
+    prompt:       scenarios[state.currentScenario].prompt,
+    transcript:   transcript,
+    wpm:          wpm,
+    duration:     duration,
+    scores: {
+      confidence: conf,
+      clarity:    clar,
+      fillers:    f.filler_count,
+      pace:       f.pace_wpm || wpm,
+      overall:    overall
+    },
+    fix_1:        f.fix_1,
+    fix_2:        f.fix_2,
+    better_version: f.better_version,
+    filler_words: f.filler_words || '',
+    pace_label:   f.pace_label   || ''
+  };
+
+  await saveSession(state.uid, sessionData);
+
+  // Show progress banner
+  if (state.lastSessionScore > 0) {
+    showProgressBanner(state.lastSessionScore, overall);
+  }
+
+  // Update last score for next retry within same session
+  state.lastSessionScore = overall;
+
+  // Refresh stats bar
+  await renderStatsBar();
+  await updateStreak();
+
+  // Feedback capture every 3 sessions
+  const stats = await getSessionStats(state.uid);
+  if (stats && stats.total % 3 === 0) {
+    document.getElementById('feedbackCapture').classList.add('visible');
+  }
+
   document.getElementById('feedbackSection').classList.add('visible');
-  document.getElementById('recordBtn').className = 'record-btn';
+  document.getElementById('recordBtn').className   = 'record-btn';
   document.getElementById('recordStatus').textContent = 'Done! See your analysis below.';
-  document.getElementById('recordStatus').className = 'record-status';
+  document.getElementById('recordStatus').className   = 'record-status';
   document.getElementById('feedbackSection').scrollIntoView({ behavior: 'smooth' });
 }
- 
-function setScoreEl(id, val, max) {
-  const el = document.getElementById(id);
+
+// ─── SCORE HELPERS ─────────────────────────────────────────────────
+function setScoreEl(id, val, max, benchId) {
+  const el  = document.getElementById(id);
   el.textContent = val;
   const pct = val / max;
-  el.className = 'sc-val ' + (pct >= 0.75 ? 'good' : pct >= 0.5 ? 'mid' : 'bad');
+  el.className   = 'sc-val ' + (pct >= 0.75 ? 'good' : pct >= 0.5 ? 'mid' : 'bad');
+  if (benchId) setBenchLabel(benchId, pct);
 }
- 
+
+function setBenchLabel(id, pct) {
+  const el = document.getElementById(id);
+  if      (pct >= 0.85) { el.textContent = 'Excellent';     el.className = 'sc-bench excellent'; }
+  else if (pct >= 0.65) { el.textContent = 'Strong';        el.className = 'sc-bench strong'; }
+  else if (pct >= 0.45) { el.textContent = 'Average';       el.className = 'sc-bench average'; }
+  else                  { el.textContent = 'Below Average'; el.className = 'sc-bench below'; }
+}
+
+function setBenchFiller(id, count) {
+  const el = document.getElementById(id);
+  if      (count <= 2) { el.textContent = 'Excellent';     el.className = 'sc-bench excellent'; }
+  else if (count <= 5) { el.textContent = 'Average';       el.className = 'sc-bench average'; }
+  else                 { el.textContent = 'Below Average'; el.className = 'sc-bench below'; }
+}
+
+function setBenchPace(id, label) {
+  const el = document.getElementById(id);
+  if      (label === 'good') { el.textContent = 'Strong';   el.className = 'sc-bench strong'; }
+  else if (label === 'fast') { el.textContent = 'Too Fast'; el.className = 'sc-bench average'; }
+  else if (label === 'slow') { el.textContent = 'Too Slow'; el.className = 'sc-bench average'; }
+  else                       { el.textContent = 'Average';  el.className = 'sc-bench average'; }
+}
+
+// ─── NAVIGATION ────────────────────────────────────────────────────
 function retryPrompt() {
   document.getElementById('feedbackSection').classList.remove('visible');
   document.getElementById('transcriptBox').classList.remove('visible');
   document.getElementById('microWin').classList.remove('visible');
+  document.getElementById('replayBtn').classList.remove('visible');
+  document.getElementById('progressBanner').classList.remove('visible');
   resetTimer();
   document.getElementById('recordStatus').textContent = 'Tap to try again — beat your score';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
- 
+
 function nextPrompt() {
   loadScenario((state.currentScenario + 1) % scenarios.length);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
- 
+
 function selectFeedback(btn, val) {
   document.querySelectorAll('.fc-opt').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
   state.feedbackChoice = val;
 }
- 
+
 function submitFeedback() {
   console.log('Feedback:', state.feedbackChoice, document.getElementById('feedbackText').value);
-  document.getElementById('feedbackCapture').innerHTML = '<div style="color:var(--success);font-size:13px;">✓ Thanks. This helps us improve.</div>';
+  document.getElementById('feedbackCapture').innerHTML =
+    '<div style="color:var(--success);font-size:13px;">✓ Thanks. This helps us improve.</div>';
 }
 </script>
 </body>
