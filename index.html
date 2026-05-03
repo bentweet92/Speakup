@@ -400,7 +400,56 @@
     <div class="login-footer">Your progress is saved securely to your account<br>and syncs across all your devices.</div>
   </div>
 </div>
+<!-- ─── FIRST SESSION INTRO MODAL ─── -->
+<div id="introModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:200; overflow-y:auto; padding:24px 20px;">
+  <div style="max-width:560px; margin:0 auto; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:36px 32px;">
 
+    <div style="font-family:'Syne',sans-serif; font-size:22px; font-weight:800; margin-bottom:6px;">Welcome to <span style="color:var(--accent)">SpeakUp</span></div>
+    <div style="font-size:12px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; margin-bottom:28px;">Here's what your feedback will look like</div>
+
+    <div style="font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:10px;">Sample prompt</div>
+    <div style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:16px 20px; margin-bottom:24px;">
+      <div style="font-family:'Syne',sans-serif; font-size:15px; font-weight:600; line-height:1.5; margin-bottom:8px;">"Introduce yourself as if you're meeting your new manager on the first day."</div>
+      <div style="font-size:11px; color:var(--muted);">Before you speak: Name + background → Key strength → Forward-looking close</div>
+    </div>
+
+    <div style="font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:10px;">Sample answer that was recorded</div>
+    <div style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:14px 18px; margin-bottom:24px; font-size:13px; color:var(--muted); line-height:1.7; font-style:italic;">
+      "Hi, so, um, I'm Priya. I basically did my MBA from Pune and uh I have like two years of experience in sales. I am a very hardworking person and I like to give my best. So yeah, looking forward to working here."
+    </div>
+
+    <div style="font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:10px;">What the feedback looked like</div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px;">
+        <div style="font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:6px;">Confidence</div>
+        <div style="font-family:'Syne',sans-serif; font-size:28px; font-weight:700; color:var(--accent);">4.5</div>
+        <div style="font-size:10px; margin-top:4px; padding:2px 8px; border-radius:100px; display:inline-block; background:rgba(255,107,53,0.12); color:var(--accent2);">Average</div>
+      </div>
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px;">
+        <div style="font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:6px;">Filler Words</div>
+        <div style="font-family:'Syne',sans-serif; font-size:28px; font-weight:700; color:var(--danger);">6</div>
+        <div style="font-size:10px; margin-top:4px; padding:2px 8px; border-radius:100px; display:inline-block; background:rgba(255,74,74,0.12); color:var(--danger);">Below Average</div>
+      </div>
+    </div>
+
+    <div style="background:var(--surface); border:1px solid var(--accent); border-radius:10px; padding:16px 18px; margin-bottom:16px;">
+      <div style="font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--accent); margin-bottom:10px;">Top 2 things to fix</div>
+      <div style="font-size:13px; color:var(--text); line-height:1.6; margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid var(--border);"><span style="color:var(--accent);">01 </span>You used "basically", "um", and "uh" four times in 30 seconds — record yourself and count them.</div>
+      <div style="font-size:13px; color:var(--text); line-height:1.6;"><span style="color:var(--accent);">02 </span>"I am a very hardworking person" is a claim with no proof — replace it with one specific result you delivered.</div>
+    </div>
+
+    <div style="background:var(--surface2); border:1px solid var(--border); border-left:3px solid var(--success); border-radius:10px; padding:16px 18px; margin-bottom:28px;">
+      <div style="font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--success); margin-bottom:8px;">How a confident speaker would say it</div>
+      <div style="font-size:13px; color:var(--text); line-height:1.8; font-style:italic;">"Hi, I'm Priya. I have two years in B2B sales where I consistently hit 110% of my quarterly target. My strength is turning cold leads into long-term clients — I did that for 14 accounts in my last role. I'm keen to bring that same approach here and would love to understand the team's current pipeline challenges."</div>
+    </div>
+
+    <button onclick="closeIntro()" style="width:100%; padding:16px; background:var(--accent); color:#000; border:none; border-radius:10px; font-family:'Syne',sans-serif; font-size:16px; font-weight:700; cursor:pointer;">
+      Got it — start practising →
+    </button>
+
+  </div>
+</div>
 <!-- ─── APP ─── -->
 <div id="appScreen">
 <div class="container">
@@ -795,9 +844,21 @@ const scenarios = [
     structure: "Your position → Real example → Brief acknowledgement of other side"
   }
 ];
+// ─── FIRST SESSION INTRO ───────────────────────────────────────────
+function checkFirstSession() {
+  const seen = localStorage.getItem('speakup_intro_seen');
+  if (!seen) {
+    document.getElementById('introModal').style.display = 'block';
+  }
+}
 
+function closeIntro() {
+  document.getElementById('introModal').style.display = 'none';
+  localStorage.setItem('speakup_intro_seen', 'true');
+}
 // ─── INIT ──────────────────────────────────────────────────────────
 async function init() {
+  checkFirstSession();
   renderScenarios();
   loadScenario(0);
   await updateStreak();
