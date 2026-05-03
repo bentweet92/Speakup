@@ -712,6 +712,7 @@ const state = {
   timeLeft: 90,
   maxTime: 90,
   feedbackChoice: '',
+  replayAudio: null,
   currentSessionScore: 0,
   lastSessionScore: 0,
 };
@@ -894,9 +895,26 @@ function stopRecording() {
 
 function replayAudio() {
   if (!state.audioBlob) return;
-  const url   = URL.createObjectURL(state.audioBlob);
+
+  if (state.replayAudio) {
+    state.replayAudio.pause();
+    state.replayAudio.currentTime = 0;
+    state.replayAudio = null;
+    document.getElementById('replayBtn').textContent = '▶ Replay your answer';
+    return;
+  }
+
+  const url = URL.createObjectURL(state.audioBlob);
   const audio = new Audio(url);
+  state.replayAudio = audio;
+  document.getElementById('replayBtn').textContent = '◼ Stop replay';
+
   audio.play();
+
+  audio.onended = () => {
+    state.replayAudio = null;
+    document.getElementById('replayBtn').textContent = '▶ Replay your answer';
+  };
 }
 
 // ─── PROCESS AUDIO ─────────────────────────────────────────────────
@@ -952,6 +970,10 @@ async function processAudio() {
     document.getElementById('replayBtn').classList.add('visible');
     document.getElementById('recordStatus').textContent = '⚠ ' + err.message;
     document.getElementById('recordStatus').className   = 'record-status';
+    if (state.replayAudio) {
+    state.replayAudio.pause();
+    state.replayAudio = null;
+  }
   }
 }
 
