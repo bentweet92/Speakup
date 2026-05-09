@@ -878,7 +878,7 @@ async function updateStreak() {
     data.lastDate = today;
     await saveStreakData(uid, data);
   }
-  document.getElementById('streakCount').textContent = data.streak || 0;
+  // streak badge removed
 }
 
 // ─── STATS BAR ─────────────────────────────────────────────────────
