@@ -1139,7 +1139,7 @@ function highlightFillers(text) {
   });
   return result;
 }
-
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 // ─── RENDER FEEDBACK ───────────────────────────────────────────────
 async function renderFeedback(f, transcript, wpm, duration) {
   const conf    = parseFloat(f.confidence_score);
