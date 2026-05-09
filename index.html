@@ -865,22 +865,8 @@ async function init() {
 
 // ─── STREAK ────────────────────────────────────────────────────────
 async function updateStreak() {
-  const uid = state.uid;
-  if (!uid) return;
-  const data  = await getStreakData(uid);
-  const today = new Date().toDateString();
-
-  if (data.lastDate !== today) {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    if (data.lastDate === yesterday.toDateString()) { data.streak = (data.streak || 0) + 1; }
-    else { data.streak = 1; }
-    data.lastDate = today;
-    await saveStreakData(uid, data);
-  }
-  // streak badge removed
+  return;
 }
-
 // ─── STATS BAR ─────────────────────────────────────────────────────
 async function renderStatsBar() {
   const uid = state.uid;
