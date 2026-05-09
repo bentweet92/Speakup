@@ -457,11 +457,6 @@
   <div class="header">
     <div class="logo">Speak<span>Up</span></div>
     <div class="header-right">
-      <div class="streak-badge">
-        <span class="fire">🔥</span>
-        <span class="count" id="streakCount">0</span>
-        <span>day streak</span>
-      </div>
       <div class="user-menu" id="userMenu" onclick="toggleDropdown()">
         <img class="user-avatar" id="userAvatar" src="" alt="" style="display:none;">
         <div class="user-avatar-placeholder" id="userInitial"></div>
@@ -1094,7 +1089,7 @@ async function processAudio() {
     if (!transcript) throw new Error('Took too long. Please try again.');
     if (transcript.trim().length < 5) throw new Error("Couldn't hear you clearly. Try speaking closer to the mic.");
 
-    document.getElementById('transcriptText').textContent = transcript;
+    document.getElementById('transcriptText').innerHTML = highlightFillers(transcript);
     document.getElementById('transcriptBox').classList.add('visible');
     document.getElementById('replayBtn').classList.add('visible');
 
@@ -1135,7 +1130,15 @@ async function getFeedback(transcript) {
   await renderFeedback(feedback, transcript, wpm, duration);
 }
 
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function highlightFillers(text) {
+  const fillers = ['um','uh','basically','actually','like','you know','so','right'];
+  let result = text;
+  fillers.forEach(f => {
+    const regex = new RegExp('\\b(' + f + ')\\b', 'gi');
+    result = result.replace(regex, '<mark style="background:rgba(255,74,74,0.25);color:#ff8c8c;border-radius:3px;padding:1px 4px;">$1</mark>');
+  });
+  return result;
+}
 
 // ─── RENDER FEEDBACK ───────────────────────────────────────────────
 async function renderFeedback(f, transcript, wpm, duration) {
@@ -1232,17 +1235,17 @@ function setScoreEl(id, val, max, benchId) {
 
 function setBenchLabel(id, pct) {
   const el = document.getElementById(id);
-  if      (pct >= 0.85) { el.textContent = 'Excellent';     el.className = 'sc-bench excellent'; }
-  else if (pct >= 0.65) { el.textContent = 'Strong';        el.className = 'sc-bench strong'; }
-  else if (pct >= 0.45) { el.textContent = 'Average';       el.className = 'sc-bench average'; }
-  else                  { el.textContent = 'Below Average'; el.className = 'sc-bench below'; }
+  if      (pct >= 0.85) { el.textContent = 'Excellent';       el.className = 'sc-bench excellent'; }
+  else if (pct >= 0.65) { el.textContent = 'Strong';          el.className = 'sc-bench strong'; }
+  else if (pct >= 0.45) { el.textContent = 'Keep going';      el.className = 'sc-bench average'; }
+  else                  { el.textContent = 'Room to grow';    el.className = 'sc-bench below'; }
 }
 
 function setBenchFiller(id, count) {
   const el = document.getElementById(id);
   if      (count <= 2) { el.textContent = 'Excellent';     el.className = 'sc-bench excellent'; }
-  else if (count <= 5) { el.textContent = 'Average';       el.className = 'sc-bench average'; }
-  else                 { el.textContent = 'Below Average'; el.className = 'sc-bench below'; }
+  else if (count <= 5) { el.textContent = 'Keep going';    el.className = 'sc-bench average'; }
+  else                 { el.textContent = 'Room to grow';  el.className = 'sc-bench below'; }
 }
 
 function setBenchPace(id, label) {
