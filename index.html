@@ -906,7 +906,47 @@ const scenarios = [
     hints: [
       "Take one breath and one second — it's allowed and it shows composure",
       "Start with the problem your idea solves, not the idea itself",
-      "If you're not done, say so —
+      "If you're not done, say so — 'I can expand on this' is a strong close"
+    ],
+    structure: "The problem → Your idea → What it changes"
+  },
+  {
+    tag: "Weakness",
+    prompt: "The interviewer asks you about a genuine weakness.",
+    sub: "Pick something real. Show what you did about it.",
+    context: "self-awareness interview question",
+    hints: [
+      "Don't say 'I work too hard' — interviewers have heard it a thousand times",
+      "Pick a real weakness that you've actively worked on",
+      "Show what you did about it — the action matters more than the weakness"
+    ],
+    structure: "Real weakness → Impact it had → What you did about it"
+  },
+  {
+    tag: "Cold Client",
+    prompt: "A client was very interested, asked for a detailed itinerary, then stopped responding completely.",
+    sub: "Don't chase with desperation. Reach out with a reason.",
+    context: "re-engaging a silent prospect",
+    hints: [
+      "Don't chase with desperation — it lowers your position",
+      "Reach out once with a reason, not a follow-up for its own sake",
+      "Give them an easy out if they've changed their mind — it builds trust"
+    ],
+    structure: "Warm re-open → New reason to respond → Easy exit if needed"
+  },
+  {
+    tag: "Disagree",
+    prompt: "You disagree with your manager's approach during a team discussion. Say it.",
+    sub: "State your view. Don't bury it in softeners.",
+    context: "assertive upward communication",
+    hints: [
+      "Don't preface with 10 softeners — it buries your point before you make it",
+      "State your view clearly, then explain your reasoning",
+      "End with a question or invitation — you're opening a conversation, not winning an argument"
+    ],
+    structure: "Your position → Your reasoning → Open it up"
+  }
+];
 // ─── FIRST SESSION INTRO ───────────────────────────────────────────
 function checkFirstSession() {
   const seen = localStorage.getItem('speakup_intro_seen');
