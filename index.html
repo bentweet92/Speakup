@@ -739,6 +739,7 @@ async function saveStreakData(uid, data) {
 const BACKEND = 'https://speakup-backend-vert.vercel.app';
 
 const state = {
+  wakeLock: null,
   uid: null,
   currentScenario: 0,
   isRecording: false,
@@ -1087,7 +1088,11 @@ async function startRecording() {
     document.getElementById('feedbackSection').classList.remove('visible');
     document.getElementById('transcriptBox').classList.remove('visible');
     document.getElementById('replayBtn').classList.remove('visible');
-
+try {
+      state.wakeLock = await navigator.wakeLock.request('screen');
+    } catch (e) {
+      console.log('Wake lock not supported:', e);
+    }
     startTimer();
   } catch (e) {
     document.getElementById('recordStatus').textContent = 'Microphone access denied. Please allow mic.';
@@ -1098,6 +1103,10 @@ function stopRecording() {
   if (!state.isRecording) return;
   clearInterval(state.timerInterval);
   state.isRecording = false;
+  if (state.wakeLock) {
+    state.wakeLock.release();
+    state.wakeLock = null;
+  }
   state.mediaRecorder.stop();
   state.mediaRecorder.stream.getTracks().forEach(t => t.stop());
 
