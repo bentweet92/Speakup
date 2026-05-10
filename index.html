@@ -491,7 +491,16 @@
       <span class="score-delta" id="scoreDeltaDisplay"></span>
     </div>
   </div>
-
+<!-- ─── CUSTOM PROMPT BOX ─── -->
+<div style="margin-bottom:28px;">
+  <div class="section-label">Practice something specific</div>
+  <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px;">
+    <div style="font-size:13px; color:var(--muted); margin-bottom:12px; line-height:1.6;">Describe the conversation you want to practice — a job interview, a salary negotiation, a client call, anything. We'll create a custom prompt for you.</div>
+    <textarea id="customSituationInput" placeholder="e.g. I have a performance review with my manager next week and I want to explain why I deserve a promotion..." style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:12px; color:var(--text); font-family:'Poppins',sans-serif; font-size:13px; resize:none; min-height:80px; outline:none; margin-bottom:12px;"></textarea>
+    <button onclick="generateCustomPrompt()" id="generatePromptBtn" style="padding:10px 20px; background:var(--accent); color:#000; border:none; border-radius:8px; font-family:'Syne',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.2s;">Generate my prompt →</button>
+    <div id="customPromptStatus" style="margin-top:10px; font-size:12px; color:var(--muted); min-height:16px;"></div>
+  </div>
+</div>
   <div class="section-label">Choose your scenario</div>
   <div class="scenario-nav" id="scenarioNav"></div>
 
@@ -1231,6 +1240,59 @@ function highlightFillers(text) {
     result = result.replace(regex, '<mark style="background:rgba(255,74,74,0.25);color:#ff8c8c;border-radius:3px;padding:1px 4px;">$1</mark>');
   });
   return result;
+}
+  // ─── CUSTOM PROMPT GENERATOR ───────────────────────────────────────
+async function generateCustomPrompt() {
+  const situation = document.getElementById('customSituationInput').value.trim();
+  if (!situation) {
+    document.getElementById('customPromptStatus').textContent = 'Please describe what you want to practice first.';
+    return;
+  }
+
+  const btn = document.getElementById('generatePromptBtn');
+  const status = document.getElementById('customPromptStatus');
+  btn.textContent = 'Generating...';
+  btn.style.opacity = '0.7';
+  btn.style.cursor = 'not-allowed';
+  status.textContent = 'Creating your custom prompt...';
+
+  try {
+    const res = await fetch(BACKEND + '/api/generate-prompt', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ situation })
+    });
+
+    if (!res.ok) throw new Error('Could not generate prompt');
+
+    const data = await res.json();
+
+    // Load the custom prompt into the app
+    const customScenario = {
+      tag: 'Custom',
+      prompt: data.prompt,
+      sub: 'Your personalised practice scenario',
+      context: situation,
+      hints: data.hints || [],
+      structure: data.structure || ''
+    };
+
+    // Add to scenarios temporarily and load it
+    scenarios.unshift(customScenario);
+    renderScenarios();
+    loadScenario(0);
+
+    status.textContent = '✓ Custom prompt ready — scroll down to start practicing';
+    status.style.color = 'var(--success)';
+
+  } catch (err) {
+    status.textContent = '⚠ Could not generate prompt. Please try again.';
+    status.style.color = 'var(--danger)';
+  } finally {
+    btn.textContent = 'Generate my prompt →';
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+  }
 }
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 // ─── RENDER FEEDBACK ───────────────────────────────────────────────
