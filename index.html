@@ -132,6 +132,30 @@
   }
   .signout-btn:hover { background: rgba(255,74,74,0.08); }
 
+  /* ─── MODE TOGGLE ─── */
+  .mode-toggle {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 36px;
+    gap: 4px;
+  }
+  .mode-tab {
+    flex: 1; padding: 12px 16px;
+    background: transparent; border: none;
+    border-radius: 9px;
+    font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 700;
+    color: var(--muted); cursor: pointer; transition: all 0.2s;
+    text-align: center;
+  }
+  .mode-tab.active {
+    background: var(--accent); color: #fff;
+    box-shadow: 0 2px 8px rgba(79,70,229,0.3);
+  }
+  .mode-tab:hover:not(.active) { color: var(--text); }
+
   /* ─── STATS BAR ─── */
   .stats-bar {
     display: none;
@@ -298,12 +322,12 @@
   .micro-win.visible { display: block; }
 
   .retry-btn {
-    width: 100%; padding: 16px; background: var(--accent); color: #000;
+    width: 100%; padding: 16px; background: var(--accent); color: #fff;
     border: none; border-radius: 10px;
     font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 700;
     cursor: pointer; transition: all 0.2s; margin-bottom: 12px;
   }
-  .retry-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(232,255,74,0.2); }
+  .retry-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(79,70,229,0.25); }
 
   .new-prompt-btn {
     width: 100%; padding: 14px; background: transparent;
@@ -356,12 +380,160 @@
     50% { transform: scaleY(1); opacity: 1; }
   }
 
+  /* ─── INTERVIEW PREP STYLES ─── */
+  #interviewPrepPanel { display: none; }
+  #quickPracticePanel { display: block; }
+
+  .ip-input-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .ip-input-label {
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 8px;
+  }
+  .ip-input-desc {
+    font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 12px;
+  }
+  .ip-textarea {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px; color: var(--text);
+    font-family: 'Poppins', sans-serif; font-size: 13px;
+    resize: none; outline: none; line-height: 1.6;
+  }
+  .ip-textarea:focus { border-color: var(--accent); }
+
+  .ip-generate-btn {
+    width: 100%; padding: 16px; background: var(--accent); color: #fff;
+    border: none; border-radius: 10px;
+    font-family: 'Montserrat', sans-serif; font-size: 15px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s; margin-top: 8px;
+  }
+  .ip-generate-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(79,70,229,0.25); }
+  .ip-generate-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .ip-status {
+    margin-top: 12px; font-size: 12px; color: var(--muted);
+    min-height: 18px; text-align: center;
+  }
+
+  /* Gap analysis display */
+  .ip-gaps-card {
+    display: none;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent2);
+    border-radius: 10px; padding: 18px 20px; margin-bottom: 24px;
+    animation: fadeUp 0.3s ease;
+  }
+  .ip-gaps-card.visible { display: block; }
+  .ip-gaps-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent2); margin-bottom: 12px; }
+  .ip-gap-item {
+    font-size: 12px; color: var(--text); line-height: 1.6;
+    padding: 8px 0; border-bottom: 1px solid var(--border);
+    display: flex; gap: 10px;
+  }
+  .ip-gap-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .ip-gap-num { color: var(--accent2); font-weight: 600; min-width: 20px; }
+
+  /* Question card */
+  .ip-question-area { display: none; }
+  .ip-question-area.visible { display: block; }
+
+  .ip-progress-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .ip-progress-label {
+    font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase;
+  }
+  .ip-progress-dots { display: flex; gap: 6px; }
+  .ip-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--border); transition: all 0.3s;
+  }
+  .ip-dot.done { background: var(--success); }
+  .ip-dot.active { background: var(--accent); transform: scale(1.3); }
+
+  .ip-difficulty-badge {
+    display: inline-block; padding: 4px 12px; border-radius: 100px;
+    font-size: 10px; letter-spacing: 1px; text-transform: uppercase; font-weight: 600;
+    margin-bottom: 14px;
+  }
+  .ip-difficulty-badge.Warmup { background: rgba(5,150,105,0.1); color: var(--success); }
+  .ip-difficulty-badge.Experience { background: rgba(79,70,229,0.1); color: var(--accent); }
+  .ip-difficulty-badge.Bridge { background: rgba(124,58,237,0.1); color: var(--accent2); }
+  .ip-difficulty-badge.Pressure { background: rgba(220,38,38,0.1); color: var(--danger); }
+
+  .ip-question-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px; margin-bottom: 20px;
+    position: relative; overflow: hidden; animation: fadeUp 0.35s ease;
+  }
+  .ip-question-card::before {
+    content: '"'; position: absolute; top: -10px; left: 16px;
+    font-size: 80px; color: var(--accent); opacity: 0.1;
+    font-family: 'Montserrat', sans-serif; line-height: 1;
+  }
+  .ip-question-text {
+    font-family: 'Montserrat', sans-serif; font-size: 17px; font-weight: 600;
+    line-height: 1.5; position: relative; z-index: 1; margin-bottom: 20px;
+  }
+
+  .ip-hints-section { margin-bottom: 16px; }
+  .ip-hints-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .ip-hint-item {
+    font-size: 12px; color: var(--muted); line-height: 1.6;
+    padding: 7px 12px; border-left: 2px solid var(--border); margin-bottom: 6px;
+  }
+
+  .ip-structure-section { }
+  .ip-structure-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+  .ip-structure-item {
+    font-size: 12px; color: var(--text); line-height: 1.6;
+    padding: 7px 12px; border-left: 2px solid var(--accent);
+    margin-bottom: 6px; background: var(--surface2); border-radius: 0 6px 6px 0;
+  }
+
+  /* Next question btn (shown after feedback) */
+  .ip-next-btn {
+    width: 100%; padding: 16px; background: var(--accent); color: #fff;
+    border: none; border-radius: 10px;
+    font-family: 'Montserrat', sans-serif; font-size: 15px; font-weight: 700;
+    cursor: pointer; transition: all 0.2s; margin-top: 12px;
+    display: none;
+  }
+  .ip-next-btn.visible { display: block; }
+  .ip-next-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(79,70,229,0.25); }
+
+  /* Session complete screen */
+  .ip-complete {
+    display: none; text-align: center;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 40px 32px; margin-top: 24px;
+    animation: fadeUp 0.4s ease;
+  }
+  .ip-complete.visible { display: block; }
+  .ip-complete-icon { font-size: 48px; margin-bottom: 16px; }
+  .ip-complete-title { font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 12px; }
+  .ip-complete-body { font-size: 13px; color: var(--muted); line-height: 1.8; margin-bottom: 28px; max-width: 400px; margin-left: auto; margin-right: auto; }
+  .ip-restart-btn {
+    padding: 14px 28px; background: transparent; border: 1px solid var(--border);
+    border-radius: 10px; color: var(--muted); font-family: 'Poppins', sans-serif;
+    font-size: 13px; cursor: pointer; transition: all 0.2s;
+  }
+  .ip-restart-btn:hover { border-color: var(--accent); color: var(--accent); }
+
   @media (max-width: 480px) {
     .score-grid { grid-template-columns: repeat(2, 1fr); }
     .prompt-text { font-size: 16px; }
     .login-card { padding: 36px 24px; }
     .stats-bar { flex-wrap: wrap; }
     .stat-item { min-width: 50%; }
+    .mode-tab { font-size: 12px; padding: 10px 10px; }
   }
 
   .hidden { display: none !important; }
@@ -390,26 +562,22 @@
     <div class="login-footer">Your progress is saved securely to your account<br>and syncs across all your devices.</div>
   </div>
 </div>
+
 <!-- ─── FIRST SESSION INTRO MODAL ─── -->
 <div id="introModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:200; overflow-y:auto; padding:24px 20px;">
   <div style="max-width:560px; margin:0 auto; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:36px 32px;">
-
     <div style="font-family:'Montserrat',sans-serif; font-size:22px; font-weight:800; margin-bottom:6px;">Welcome to <span style="color:var(--accent)">SpeakUp</span></div>
     <div style="font-size:12px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; margin-bottom:28px;">Here's what your feedback will look like</div>
-
     <div style="font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:10px;">Sample prompt</div>
     <div style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:16px 20px; margin-bottom:24px;">
       <div style="font-family:'Montserrat',sans-serif; font-size:15px; font-weight:600; line-height:1.5; margin-bottom:8px;">"Introduce yourself as if you're meeting your new manager on the first day."</div>
       <div style="font-size:11px; color:var(--muted);">Before you speak: Name + background → Key strength → Forward-looking close</div>
     </div>
-
     <div style="font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:10px;">Sample answer that was recorded</div>
     <div style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:14px 18px; margin-bottom:24px; font-size:13px; color:var(--muted); line-height:1.7; font-style:italic;">
       "Hi, so, um, I'm Priya. I basically did my MBA from Pune and uh I have like two years of experience in sales. I am a very hardworking person and I like to give my best. So yeah, looking forward to working here."
     </div>
-
     <div style="font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:10px;">What the feedback looked like</div>
-
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
       <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px;">
         <div style="font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:6px;">Confidence</div>
@@ -422,24 +590,21 @@
         <div style="font-size:10px; margin-top:4px; padding:2px 8px; border-radius:100px; display:inline-block; background:rgba(255,74,74,0.12); color:var(--danger);">Below Average</div>
       </div>
     </div>
-
     <div style="background:var(--surface); border:1px solid var(--accent); border-radius:10px; padding:16px 18px; margin-bottom:16px;">
-      <div style="font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--accent); margin-bottom:10px;">Top 2 things to fix</div>
+      <div style="font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--accent); margin-bottom:10px;">Top 2 things to fix next time</div>
       <div style="font-size:13px; color:var(--text); line-height:1.6; margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid var(--border);"><span style="color:var(--accent);">01 </span>You used "basically", "um", and "uh" four times in 30 seconds — record yourself and count them.</div>
       <div style="font-size:13px; color:var(--text); line-height:1.6;"><span style="color:var(--accent);">02 </span>"I am a very hardworking person" is a claim with no proof — replace it with one specific result you delivered.</div>
     </div>
-
     <div style="background:var(--surface2); border:1px solid var(--border); border-left:3px solid var(--success); border-radius:10px; padding:16px 18px; margin-bottom:28px;">
       <div style="font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--success); margin-bottom:8px;">How a confident speaker would say it</div>
       <div style="font-size:13px; color:var(--text); line-height:1.8; font-style:italic;">"Hi, I'm Priya. I have two years in B2B sales where I consistently hit 110% of my quarterly target. My strength is turning cold leads into long-term clients — I did that for 14 accounts in my last role. I'm keen to bring that same approach here and would love to understand the team's current pipeline challenges."</div>
     </div>
-
-    <button onclick="closeIntro()" style="width:100%; padding:16px; background:var(--accent); color:#000; border:none; border-radius:10px; font-family:'Montserrat',sans-serif; font-size:16px; font-weight:700; cursor:pointer;">
+    <button onclick="closeIntro()" style="width:100%; padding:16px; background:var(--accent); color:#fff; border:none; border-radius:10px; font-family:'Montserrat',sans-serif; font-size:16px; font-weight:700; cursor:pointer;">
       Got it — start practising →
     </button>
-
   </div>
 </div>
+
 <!-- ─── APP ─── -->
 <div id="appScreen">
 <div class="container">
@@ -491,122 +656,288 @@
       <span class="score-delta" id="scoreDeltaDisplay"></span>
     </div>
   </div>
-<!-- ─── CUSTOM PROMPT BOX ─── -->
-<div style="margin-bottom:28px;">
-  <div class="section-label">Practice something specific</div>
-  <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px;">
-    <div style="font-size:13px; color:var(--muted); margin-bottom:12px; line-height:1.6;">Describe the conversation you want to practice — a job interview, a salary negotiation, a client call, anything. We'll create a custom prompt for you.</div>
-    <textarea id="customSituationInput" placeholder="e.g. I have a performance review with my manager next week and I want to explain why I deserve a promotion..." style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:12px; color:var(--text); font-family:'Poppins',sans-serif; font-size:13px; resize:none; min-height:80px; outline:none; margin-bottom:12px;"></textarea>
-    <button onclick="generateCustomPrompt()" id="generatePromptBtn" style="padding:10px 20px; background:var(--accent); color:#000; border:none; border-radius:8px; font-family:'Syne',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.2s;">Generate my prompt →</button>
-    <div id="customPromptStatus" style="margin-top:10px; font-size:12px; color:var(--muted); min-height:16px;"></div>
-  </div>
-</div>
-  <div class="section-label">Choose your scenario</div>
-  <div class="scenario-nav" id="scenarioNav"></div>
 
-  <div class="prompt-card">
-    <div class="prompt-text" id="promptText">Loading...</div>
-    <div class="prompt-sub" id="promptSub"></div>
-    <div id="hintBox" style="margin-top:16px; display:none;">
-  <div style="font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:10px;">Before you speak</div>
-  <ul id="hintList" style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px;"></ul>
-</div>
+  <!-- ─── MODE TOGGLE ─── -->
+  <div class="mode-toggle">
+    <button class="mode-tab active" id="tabQuick" onclick="switchMode('quick')">⚡ Quick Practice</button>
+    <button class="mode-tab" id="tabInterview" onclick="switchMode('interview')">🎯 Interview Prep</button>
   </div>
 
-  <div class="record-area">
-    <div style="position:relative; display:inline-flex; align-items:center; justify-content:center;">
-      <svg class="timer-svg" width="120" height="120" viewBox="0 0 100 100">
-        <circle class="timer-track" cx="50" cy="50" r="45"/>
-        <circle class="timer-fill" id="timerFill" cx="50" cy="50" r="45"/>
-      </svg>
-      <div class="timer-label">
-        <span class="timer-num" id="timerNum">45</span>
-        <span class="timer-unit">sec</span>
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- QUICK PRACTICE PANEL                        -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="quickPracticePanel">
+
+    <!-- Custom prompt box -->
+    <div style="margin-bottom:28px;">
+      <div class="section-label">Practice something specific</div>
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px;">
+        <div style="font-size:13px; color:var(--muted); margin-bottom:12px; line-height:1.6;">Describe the conversation you want to practice — a job interview, a salary negotiation, a client call, anything. We'll create a custom prompt for you.</div>
+        <textarea id="customSituationInput" placeholder="e.g. I have a performance review with my manager next week and I want to explain why I deserve a promotion..." style="width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:12px; color:var(--text); font-family:'Poppins',sans-serif; font-size:13px; resize:none; min-height:80px; outline:none; margin-bottom:12px;"></textarea>
+        <button onclick="generateCustomPrompt()" id="generatePromptBtn" style="padding:10px 20px; background:var(--accent); color:#fff; border:none; border-radius:8px; font-family:'Montserrat',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.2s;">Generate my prompt →</button>
+        <div id="customPromptStatus" style="margin-top:10px; font-size:12px; color:var(--muted); min-height:16px;"></div>
       </div>
     </div>
 
-    <div class="waveform" id="waveform">
-      <div class="wave-bar"></div><div class="wave-bar"></div>
-      <div class="wave-bar"></div><div class="wave-bar"></div>
-      <div class="wave-bar"></div><div class="wave-bar"></div>
-      <div class="wave-bar"></div><div class="wave-bar"></div>
-    </div>
+    <div class="section-label">Choose your scenario</div>
+    <div class="scenario-nav" id="scenarioNav"></div>
 
-    <br>
-    <button class="record-btn" id="recordBtn" onclick="toggleRecord()">
-      <svg class="record-icon" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="11" r="4" fill="#000"/>
-        <path d="M19 11a7 7 0 01-14 0M12 18v3M9 21h6" stroke="#000" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-    </button>
-<div style="font-size:11px; color:var(--muted); text-align:center; margin-bottom:8px; line-height:1.6;">Keep your screen on while recording.<br>Locking your phone will stop the session.</div>
-    <div class="record-status" id="recordStatus">Tap to start speaking</div>
-    <button class="replay-btn" id="replayBtn" onclick="replayAudio()">▶ Replay your answer</button>
-  </div>
-
-  <div class="transcript-box" id="transcriptBox">
-    <div class="t-label">What we heard</div>
-    <div class="t-text" id="transcriptText"></div>
-  </div>
-
-  <div class="feedback-section" id="feedbackSection">
-    <div class="section-label" style="margin-bottom:16px">Your Analysis</div>
-
-    <div class="score-grid">
-      <div class="score-card">
-        <div class="sc-label">Confidence</div>
-        <div class="sc-val" id="scoreConfidence">—</div>
-        <div class="sc-sub">out of 10</div>
-        <div class="sc-bench" id="benchConfidence"></div>
-      </div>
-      <div class="score-card">
-        <div class="sc-label">Filler Words</div>
-        <div class="sc-val" id="scoreFillers">—</div>
-        <div class="sc-sub" id="fillerSub">detected</div>
-        <div class="sc-bench" id="benchFillers"></div>
-      </div>
-      <div class="score-card">
-        <div class="sc-label">Clarity</div>
-        <div class="sc-val" id="scoreClarity">—</div>
-        <div class="sc-sub">out of 10</div>
-        <div class="sc-bench" id="benchClarity"></div>
-      </div>
-      <div class="score-card">
-        <div class="sc-label">Pace</div>
-        <div class="sc-val" id="scorePace">—</div>
-        <div class="sc-sub" id="paceSub">words/min</div>
-        <div class="sc-bench" id="benchPace"></div>
+    <div class="prompt-card">
+      <div class="prompt-text" id="promptText">Loading...</div>
+      <div class="prompt-sub" id="promptSub"></div>
+      <div id="hintBox" style="margin-top:16px; display:none;">
+        <div style="font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:10px;">Before you speak</div>
+        <ul id="hintList" style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px;"></ul>
       </div>
     </div>
 
-    <div class="fixes-box">
-      <div class="fx-label">Top 2 things to fix next time</div>
-      <div class="fix-item"><span class="fix-num">01</span><span id="fix1">—</span></div>
-      <div class="fix-item"><span class="fix-num">02</span><span id="fix2">—</span></div>
-    </div>
-
-    <div class="better-box">
-      <div class="bv-label">How a confident speaker would say this</div>
-      <div class="bv-text" id="betterVersion">—</div>
-    </div>
-
-    <div class="micro-win" id="microWin"></div>
-
-    <button class="retry-btn" onclick="retryPrompt()">↺ Try Again — Beat Your Score</button>
-    <button class="new-prompt-btn" onclick="nextPrompt()">Next Scenario →</button>
-
-    <div class="feedback-capture" id="feedbackCapture">
-      <div class="fc-label">Quick feedback (helps us improve)</div>
-      <div class="fc-q">Was this useful?</div>
-      <div class="fc-options">
-        <button class="fc-opt" onclick="selectFeedback(this, 'yes')">✓ Yes</button>
-        <button class="fc-opt" onclick="selectFeedback(this, 'somewhat')">~ Somewhat</button>
-        <button class="fc-opt" onclick="selectFeedback(this, 'no')">✕ No</button>
+    <!-- Recording area -->
+    <div class="record-area">
+      <div style="position:relative; display:inline-flex; align-items:center; justify-content:center;">
+        <svg class="timer-svg" width="120" height="120" viewBox="0 0 100 100">
+          <circle class="timer-track" cx="50" cy="50" r="45"/>
+          <circle class="timer-fill" id="timerFill" cx="50" cy="50" r="45"/>
+        </svg>
+        <div class="timer-label">
+          <span class="timer-num" id="timerNum">45</span>
+          <span class="timer-unit">sec</span>
+        </div>
       </div>
-      <textarea class="fc-text" id="feedbackText" placeholder="What felt off or missing? (optional)"></textarea>
-      <button class="fc-submit" onclick="submitFeedback()">Submit →</button>
+
+      <div class="waveform" id="waveform">
+        <div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div>
+      </div>
+
+      <br>
+      <button class="record-btn" id="recordBtn" onclick="toggleRecord()">
+        <svg class="record-icon" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="11" r="4" fill="#fff"/>
+          <path d="M19 11a7 7 0 01-14 0M12 18v3M9 21h6" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div style="font-size:11px; color:var(--muted); text-align:center; margin-bottom:8px; line-height:1.6; margin-top:8px;">Keep your screen on while recording.<br>Locking your phone will stop the session.</div>
+      <div class="record-status" id="recordStatus">Tap to start speaking</div>
+      <button class="replay-btn" id="replayBtn" onclick="replayAudio()">▶ Replay your answer</button>
     </div>
-  </div>
+
+    <div class="transcript-box" id="transcriptBox">
+      <div class="t-label">What we heard</div>
+      <div class="t-text" id="transcriptText"></div>
+    </div>
+
+    <div class="feedback-section" id="feedbackSection">
+      <div class="section-label" style="margin-bottom:16px">Your Analysis</div>
+
+      <div class="score-grid">
+        <div class="score-card">
+          <div class="sc-label">Confidence</div>
+          <div class="sc-val" id="scoreConfidence">—</div>
+          <div class="sc-sub">out of 10</div>
+          <div class="sc-bench" id="benchConfidence"></div>
+        </div>
+        <div class="score-card">
+          <div class="sc-label">Filler Words</div>
+          <div class="sc-val" id="scoreFillers">—</div>
+          <div class="sc-sub" id="fillerSub">detected</div>
+          <div class="sc-bench" id="benchFillers"></div>
+        </div>
+        <div class="score-card">
+          <div class="sc-label">Clarity</div>
+          <div class="sc-val" id="scoreClarity">—</div>
+          <div class="sc-sub">out of 10</div>
+          <div class="sc-bench" id="benchClarity"></div>
+        </div>
+        <div class="score-card">
+          <div class="sc-label">Pace</div>
+          <div class="sc-val" id="scorePace">—</div>
+          <div class="sc-sub" id="paceSub">words/min</div>
+          <div class="sc-bench" id="benchPace"></div>
+        </div>
+      </div>
+
+      <div class="fixes-box">
+        <div class="fx-label">Top 2 things to fix next time</div>
+        <div class="fix-item"><span class="fix-num">01</span><span id="fix1">—</span></div>
+        <div class="fix-item"><span class="fix-num">02</span><span id="fix2">—</span></div>
+      </div>
+
+      <div class="better-box">
+        <div class="bv-label">How a confident speaker would say this</div>
+        <div class="bv-text" id="betterVersion">—</div>
+      </div>
+
+      <div class="micro-win" id="microWin"></div>
+
+      <button class="retry-btn" onclick="retryPrompt()">↺ Try Again — Beat Your Score</button>
+      <button class="new-prompt-btn" onclick="nextPrompt()">Next Scenario →</button>
+
+      <div class="feedback-capture" id="feedbackCapture">
+        <div class="fc-label">Quick feedback (helps us improve)</div>
+        <div class="fc-q">Was this useful?</div>
+        <div class="fc-options">
+          <button class="fc-opt" onclick="selectFeedback(this, 'yes')">✓ Yes</button>
+          <button class="fc-opt" onclick="selectFeedback(this, 'somewhat')">~ Somewhat</button>
+          <button class="fc-opt" onclick="selectFeedback(this, 'no')">✕ No</button>
+        </div>
+        <textarea class="fc-text" id="feedbackText" placeholder="What felt off or missing? (optional)"></textarea>
+        <button class="fc-submit" onclick="submitFeedback()">Submit →</button>
+      </div>
+    </div>
+
+  </div><!-- end #quickPracticePanel -->
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- INTERVIEW PREP PANEL                        -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div id="interviewPrepPanel">
+
+    <!-- Input phase -->
+    <div id="ipInputPhase">
+      <div class="ip-input-card">
+        <div class="ip-input-label">Your Background</div>
+        <div class="ip-input-desc">Current role, industry, and key experience in 1–2 sentences. Be specific — vague inputs produce generic questions.</div>
+        <textarea class="ip-textarea" id="ipBackground" rows="3" placeholder="e.g. I'm a training manager at a financial services firm with 6 years of experience in L&D, onboarding, and AML compliance training. I'm applying for an L&D Manager role at a veterinary clinic chain."></textarea>
+      </div>
+
+      <div class="ip-input-card">
+        <div class="ip-input-label">Job Description</div>
+        <div class="ip-input-desc">Paste the full JD. The more complete it is, the sharper the gap analysis.</div>
+        <textarea class="ip-textarea" id="ipJobDescription" rows="8" placeholder="Paste the job description here..."></textarea>
+      </div>
+
+      <button class="ip-generate-btn" id="ipGenerateBtn" onclick="generateInterviewQuestions()">
+        Analyse gaps and generate questions →
+      </button>
+      <div class="ip-status" id="ipStatus"></div>
+    </div>
+
+    <!-- Gap analysis display -->
+    <div class="ip-gaps-card" id="ipGapsCard">
+      <div class="ip-gaps-label">⚠ The 3 gaps this interview will test</div>
+      <div id="ipGapsList"></div>
+    </div>
+
+    <!-- Question area -->
+    <div class="ip-question-area" id="ipQuestionArea">
+
+      <div class="ip-progress-bar">
+        <div class="ip-progress-label" id="ipProgressLabel">Question 1 of 6</div>
+        <div class="ip-progress-dots" id="ipProgressDots"></div>
+      </div>
+
+      <div id="ipDifficultyBadge" class="ip-difficulty-badge"></div>
+
+      <div class="ip-question-card" id="ipQuestionCard">
+        <div class="ip-question-text" id="ipQuestionText"></div>
+
+        <div class="ip-hints-section">
+          <div class="ip-hints-label">Before you speak</div>
+          <div id="ipHintsList"></div>
+        </div>
+
+        <div class="ip-structure-section">
+          <div class="ip-structure-label">Answer structure</div>
+          <div id="ipStructureList"></div>
+        </div>
+      </div>
+
+      <!-- Recording area — Interview mode (90 sec timer) -->
+      <div class="record-area">
+        <div style="position:relative; display:inline-flex; align-items:center; justify-content:center;">
+          <svg class="timer-svg" width="120" height="120" viewBox="0 0 100 100">
+            <circle class="timer-track" cx="50" cy="50" r="45"/>
+            <circle class="timer-fill" id="ipTimerFill" cx="50" cy="50" r="45"/>
+          </svg>
+          <div class="timer-label">
+            <span class="timer-num" id="ipTimerNum">90</span>
+            <span class="timer-unit">sec</span>
+          </div>
+        </div>
+
+        <div class="waveform" id="ipWaveform">
+          <div class="wave-bar"></div><div class="wave-bar"></div>
+          <div class="wave-bar"></div><div class="wave-bar"></div>
+          <div class="wave-bar"></div><div class="wave-bar"></div>
+          <div class="wave-bar"></div><div class="wave-bar"></div>
+        </div>
+
+        <br>
+        <button class="record-btn" id="ipRecordBtn" onclick="toggleIpRecord()">
+          <svg class="record-icon" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="11" r="4" fill="#fff"/>
+            <path d="M19 11a7 7 0 01-14 0M12 18v3M9 21h6" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <div style="font-size:11px; color:var(--muted); text-align:center; margin-bottom:8px; line-height:1.6; margin-top:8px;">Keep your screen on while recording.<br>Locking your phone will stop the session.</div>
+        <div class="record-status" id="ipRecordStatus">Tap to answer this question</div>
+        <button class="replay-btn" id="ipReplayBtn" onclick="replayIpAudio()">▶ Replay your answer</button>
+      </div>
+
+      <div class="transcript-box" id="ipTranscriptBox">
+        <div class="t-label">What we heard</div>
+        <div class="t-text" id="ipTranscriptText"></div>
+      </div>
+
+      <!-- Feedback for interview question -->
+      <div class="feedback-section" id="ipFeedbackSection">
+        <div class="section-label" style="margin-bottom:16px">Your Analysis</div>
+
+        <div class="score-grid">
+          <div class="score-card">
+            <div class="sc-label">Confidence</div>
+            <div class="sc-val" id="ipScoreConfidence">—</div>
+            <div class="sc-sub">out of 10</div>
+            <div class="sc-bench" id="ipBenchConfidence"></div>
+          </div>
+          <div class="score-card">
+            <div class="sc-label">Filler Words</div>
+            <div class="sc-val" id="ipScoreFillers">—</div>
+            <div class="sc-sub" id="ipFillerSub">detected</div>
+            <div class="sc-bench" id="ipBenchFillers"></div>
+          </div>
+          <div class="score-card">
+            <div class="sc-label">Clarity</div>
+            <div class="sc-val" id="ipScoreClarity">—</div>
+            <div class="sc-sub">out of 10</div>
+            <div class="sc-bench" id="ipBenchClarity"></div>
+          </div>
+          <div class="score-card">
+            <div class="sc-label">Pace</div>
+            <div class="sc-val" id="ipScorePace">—</div>
+            <div class="sc-sub" id="ipPaceSub">words/min</div>
+            <div class="sc-bench" id="ipBenchPace"></div>
+          </div>
+        </div>
+
+        <div class="fixes-box">
+          <div class="fx-label">Top 2 things to fix next time</div>
+          <div class="fix-item"><span class="fix-num">01</span><span id="ipFix1">—</span></div>
+          <div class="fix-item"><span class="fix-num">02</span><span id="ipFix2">—</span></div>
+        </div>
+
+        <div class="better-box">
+          <div class="bv-label">How a confident speaker would say this</div>
+          <div class="bv-text" id="ipBetterVersion">—</div>
+        </div>
+
+        <!-- Next question button -->
+        <button class="ip-next-btn" id="ipNextBtn" onclick="nextInterviewQuestion()">Next Question →</button>
+      </div>
+
+    </div><!-- end ipQuestionArea -->
+
+    <!-- Session complete -->
+    <div class="ip-complete" id="ipComplete">
+      <div class="ip-complete-icon">✓</div>
+      <div class="ip-complete-title">Session complete.</div>
+      <div class="ip-complete-body">You just practiced defending your transition across 6 questions. In a real interview, you'll feel more prepared because you already said these words out loud. Come back any time you have a big conversation coming up.</div>
+      <button class="ip-restart-btn" onclick="restartInterviewPrep()">Start a new session →</button>
+    </div>
+
+  </div><!-- end #interviewPrepPanel -->
 
 </div>
 </div><!-- end #appScreen -->
@@ -689,25 +1020,15 @@ function sessionsRef(uid) {
 }
 
 async function saveSession(uid, data) {
-  try {
-    await sessionsRef(uid).add(data);
-  } catch (e) {
-    console.warn('Firestore save failed:', e);
-  }
+  try { await sessionsRef(uid).add(data); } catch (e) { console.warn('Firestore save failed:', e); }
 }
 
 async function getLastSession(uid) {
   try {
-    const snap = await sessionsRef(uid)
-      .orderBy('timestamp', 'desc')
-      .limit(1)
-      .get();
+    const snap = await sessionsRef(uid).orderBy('timestamp', 'desc').limit(1).get();
     if (snap.empty) return null;
     return snap.docs[0].data();
-  } catch (e) {
-    console.warn('Firestore read failed:', e);
-    return null;
-  }
+  } catch (e) { return null; }
 }
 
 async function getSessionStats(uid) {
@@ -720,28 +1041,7 @@ async function getSessionStats(uid) {
       best:  scores.length ? Math.max(...scores) : 0,
       avg:   scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0
     };
-  } catch (e) {
-    console.warn('Firestore stats failed:', e);
-    return null;
-  }
-}
-
-async function getStreakData(uid) {
-  try {
-    const doc = await db.collection('users').doc(uid).get();
-    if (doc.exists && doc.data().streak !== undefined) return doc.data();
-    return { streak: 0, lastDate: '' };
-  } catch (e) {
-    return { streak: 0, lastDate: '' };
-  }
-}
-
-async function saveStreakData(uid, data) {
-  try {
-    await db.collection('users').doc(uid).set(data, { merge: true });
-  } catch (e) {
-    console.warn('Streak save failed:', e);
-  }
+  } catch (e) { return null; }
 }
 
 // ─── APP STATE ─────────────────────────────────────────────────────
@@ -763,8 +1063,41 @@ const state = {
   replayAudio: null,
   currentSessionScore: 0,
   lastSessionScore: 0,
+  currentMode: 'quick'
 };
 
+// Interview prep state — completely separate from quick practice state
+const ipState = {
+  questions: [],
+  currentIndex: 0,
+  isRecording: false,
+  mediaRecorder: null,
+  audioChunks: [],
+  audioBlob: null,
+  audioMimeType: '',
+  timerInterval: null,
+  timeLeft: 90,
+  maxTime: 90,
+  wakeLock: null,
+  replayAudio: null
+};
+
+// ─── MODE SWITCHING ────────────────────────────────────────────────
+function switchMode(mode) {
+  state.currentMode = mode;
+  document.getElementById('tabQuick').classList.toggle('active', mode === 'quick');
+  document.getElementById('tabInterview').classList.toggle('active', mode === 'interview');
+  document.getElementById('quickPracticePanel').style.display = mode === 'quick' ? 'block' : 'none';
+  document.getElementById('interviewPrepPanel').style.display = mode === 'interview' ? 'block' : 'none';
+
+  // If switching to interview, set timer display to 90s
+  if (mode === 'interview') {
+    document.getElementById('ipTimerNum').textContent = '90';
+    resetIpTimer();
+  }
+}
+
+// ─── SCENARIOS ─────────────────────────────────────────────────────
 const scenarios = [
   {
     tag: "Why You",
@@ -947,41 +1280,34 @@ const scenarios = [
     structure: "Your position → Your reasoning → Open it up"
   }
 ];
+
 // ─── FIRST SESSION INTRO ───────────────────────────────────────────
 function checkFirstSession() {
   const seen = localStorage.getItem('speakup_intro_seen');
-  if (!seen) {
-    document.getElementById('introModal').style.display = 'block';
-  }
+  if (!seen) document.getElementById('introModal').style.display = 'block';
 }
 
 function closeIntro() {
   document.getElementById('introModal').style.display = 'none';
   localStorage.setItem('speakup_intro_seen', 'true');
 }
+
 // ─── INIT ──────────────────────────────────────────────────────────
 async function init() {
   checkFirstSession();
   renderScenarios();
   loadScenario(0);
-  await updateStreak();
   await renderStatsBar();
-  // Pre-load last session score for delta comparison
   const last = await getLastSession(state.uid);
   state.lastSessionScore = last ? (last.scores?.overall || 0) : 0;
 }
 
-// ─── STREAK ────────────────────────────────────────────────────────
-async function updateStreak() {
-  return;
-}
 // ─── STATS BAR ─────────────────────────────────────────────────────
 async function renderStatsBar() {
   const uid = state.uid;
   if (!uid) return;
   const stats = await getSessionStats(uid);
   if (!stats || stats.total === 0) return;
-
   document.getElementById('statSessions').textContent = stats.total;
   document.getElementById('statBest').textContent     = stats.best.toFixed(1);
   document.getElementById('statAvg').textContent      = stats.avg.toFixed(1);
@@ -992,16 +1318,11 @@ async function renderStatsBar() {
 function showProgressBanner(prevScore, currScore) {
   if (!prevScore || !currScore) return;
   const delta = (currScore - prevScore).toFixed(1);
-  document.getElementById('prevScoreDisplay').textContent = prevScore.toFixed(1);
+  document.getElementById('prevScoreDisplay').textContent  = prevScore.toFixed(1);
   document.getElementById('todayScoreDisplay').textContent = currScore.toFixed(1);
   const deltaEl = document.getElementById('scoreDeltaDisplay');
-  if (delta > 0) {
-    deltaEl.textContent = `+${delta} ↑`;
-    deltaEl.className = 'score-delta positive';
-  } else {
-    deltaEl.textContent = `${delta} ↓`;
-    deltaEl.className = 'score-delta negative';
-  }
+  if (delta > 0) { deltaEl.textContent = `+${delta} ↑`; deltaEl.className = 'score-delta positive'; }
+  else           { deltaEl.textContent = `${delta} ↓`;  deltaEl.className = 'score-delta negative'; }
   document.getElementById('progressBanner').classList.add('visible');
 }
 
@@ -1043,7 +1364,7 @@ function resetUI() {
   resetTimer();
 }
 
-// ─── TIMER ─────────────────────────────────────────────────────────
+// ─── TIMER (Quick Practice) ────────────────────────────────────────
 function resetTimer() {
   clearInterval(state.timerInterval);
   state.timeLeft = state.maxTime;
@@ -1067,7 +1388,7 @@ function startTimer() {
   }, 1000);
 }
 
-// ─── RECORDING ─────────────────────────────────────────────────────
+// ─── RECORDING (Quick Practice) ────────────────────────────────────
 async function toggleRecord() {
   if (state.isRecording) { stopRecording(); } else { startRecording(); }
 }
@@ -1097,11 +1418,8 @@ async function startRecording() {
     document.getElementById('feedbackSection').classList.remove('visible');
     document.getElementById('transcriptBox').classList.remove('visible');
     document.getElementById('replayBtn').classList.remove('visible');
-try {
-      state.wakeLock = await navigator.wakeLock.request('screen');
-    } catch (e) {
-      console.log('Wake lock not supported:', e);
-    }
+
+    try { state.wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
     startTimer();
   } catch (e) {
     document.getElementById('recordStatus').textContent = 'Microphone access denied. Please allow mic.';
@@ -1112,13 +1430,9 @@ function stopRecording() {
   if (!state.isRecording) return;
   clearInterval(state.timerInterval);
   state.isRecording = false;
-  if (state.wakeLock) {
-    state.wakeLock.release();
-    state.wakeLock = null;
-  }
+  if (state.wakeLock) { state.wakeLock.release(); state.wakeLock = null; }
   state.mediaRecorder.stop();
   state.mediaRecorder.stream.getTracks().forEach(t => t.stop());
-
   document.getElementById('recordBtn').className = 'record-btn disabled';
   document.getElementById('waveform').classList.remove('active');
   document.getElementById('timerFill').classList.remove('recording');
@@ -1128,60 +1442,34 @@ function stopRecording() {
 
 function replayAudio() {
   if (!state.audioBlob) return;
-
   if (state.replayAudio) {
-    state.replayAudio.pause();
-    state.replayAudio.currentTime = 0;
-    state.replayAudio = null;
-    document.getElementById('replayBtn').textContent = '▶ Replay your answer';
-    return;
+    state.replayAudio.pause(); state.replayAudio.currentTime = 0; state.replayAudio = null;
+    document.getElementById('replayBtn').textContent = '▶ Replay your answer'; return;
   }
-
   const url = URL.createObjectURL(state.audioBlob);
   const audio = new Audio(url);
   state.replayAudio = audio;
   document.getElementById('replayBtn').textContent = '◼ Stop replay';
-
   audio.play();
-
-  audio.onended = () => {
-    state.replayAudio = null;
-    document.getElementById('replayBtn').textContent = '▶ Replay your answer';
-  };
+  audio.onended = () => { state.replayAudio = null; document.getElementById('replayBtn').textContent = '▶ Replay your answer'; };
 }
 
-// ─── PROCESS AUDIO ─────────────────────────────────────────────────
+// ─── PROCESS AUDIO (Quick Practice) ───────────────────────────────
 async function processAudio() {
-  const blob    = new Blob(state.audioChunks, { type: state.audioMimeType || 'audio/mp4' });
+  const blob = new Blob(state.audioChunks, { type: state.audioMimeType || 'audio/mp4' });
   state.audioBlob = blob;
 
   try {
     document.getElementById('recordStatus').textContent = 'Uploading audio...';
-
-    const transcribeRes = await fetch(BACKEND + '/api/transcribe', {
-      method: 'POST',
-      body: blob
-    });
-
-    if (!transcribeRes.ok) {
-      const err = await transcribeRes.json();
-      throw new Error(err.error || 'Upload failed');
-    }
-
+    const transcribeRes = await fetch(BACKEND + '/api/transcribe', { method: 'POST', body: blob });
+    if (!transcribeRes.ok) { const err = await transcribeRes.json(); throw new Error(err.error || 'Upload failed'); }
     const { id } = await transcribeRes.json();
+
     document.getElementById('recordStatus').textContent = 'Transcribing your speech...';
-
-    let transcript = null;
-    let elapsed    = 0;
-
+    let transcript = null; let elapsed = 0;
     for (let i = 0; i < 20; i++) {
-      await sleep(3000);
-      elapsed += 3;
-
-      if (elapsed === 15) {
-        document.getElementById('recordStatus').textContent = 'Taking longer than usual, please wait...';
-      }
-
+      await sleep(3000); elapsed += 3;
+      if (elapsed === 15) document.getElementById('recordStatus').textContent = 'Taking longer than usual, please wait...';
       const statusRes  = await fetch(BACKEND + '/api/status?id=' + id);
       const statusData = await statusRes.json();
       if (statusData.status === 'completed') { transcript = statusData.text; break; }
@@ -1194,7 +1482,6 @@ async function processAudio() {
     document.getElementById('transcriptText').innerHTML = highlightFillers(transcript);
     document.getElementById('transcriptBox').classList.add('visible');
     document.getElementById('replayBtn').classList.add('visible');
-
     document.getElementById('recordStatus').textContent = 'Analysing your speech...';
     await getFeedback(transcript);
 
@@ -1203,14 +1490,10 @@ async function processAudio() {
     document.getElementById('replayBtn').classList.add('visible');
     document.getElementById('recordStatus').textContent = '⚠ ' + err.message;
     document.getElementById('recordStatus').className   = 'record-status';
-    if (state.replayAudio) {
-    state.replayAudio.pause();
-    state.replayAudio = null;
-  }
   }
 }
 
-// ─── FEEDBACK ──────────────────────────────────────────────────────
+// ─── FEEDBACK (Quick Practice) ─────────────────────────────────────
 async function getFeedback(transcript) {
   const scenario   = scenarios[state.currentScenario];
   const spokenWords = transcript.split(' ').length;
@@ -1222,12 +1505,7 @@ async function getFeedback(transcript) {
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ transcript, scenario, wpm, duration })
   });
-
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.error || 'Feedback failed');
-  }
-
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Feedback failed'); }
   const feedback = await res.json();
   await renderFeedback(feedback, transcript, wpm, duration);
 }
@@ -1241,67 +1519,49 @@ function highlightFillers(text) {
   });
   return result;
 }
-  // ─── CUSTOM PROMPT GENERATOR ───────────────────────────────────────
+
+// ─── CUSTOM PROMPT GENERATOR ───────────────────────────────────────
 async function generateCustomPrompt() {
   const situation = document.getElementById('customSituationInput').value.trim();
-  if (!situation) {
-    document.getElementById('customPromptStatus').textContent = 'Please describe what you want to practice first.';
-    return;
-  }
+  if (!situation) { document.getElementById('customPromptStatus').textContent = 'Please describe what you want to practice first.'; return; }
 
   const btn = document.getElementById('generatePromptBtn');
   const status = document.getElementById('customPromptStatus');
-  btn.textContent = 'Generating...';
-  btn.style.opacity = '0.7';
-  btn.style.cursor = 'not-allowed';
+  btn.textContent = 'Generating...'; btn.style.opacity = '0.7'; btn.style.cursor = 'not-allowed';
   status.textContent = 'Creating your custom prompt...';
 
   try {
     const res = await fetch(BACKEND + '/api/generate-prompt', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ situation })
     });
-
     if (!res.ok) throw new Error('Could not generate prompt');
-
     const data = await res.json();
-
-    // Load the custom prompt into the app
     const customScenario = {
-      tag: 'Custom',
-      prompt: data.prompt,
-      sub: 'Your personalised practice scenario',
-      context: situation,
-      hints: data.hints || [],
-      structure: data.structure || ''
+      tag: 'Custom', prompt: data.prompt,
+      sub: 'Your personalised practice scenario', context: situation,
+      hints: data.hints || [], structure: data.structure || ''
     };
-
-    // Add to scenarios temporarily and load it
     scenarios.unshift(customScenario);
     renderScenarios();
     loadScenario(0);
-
     status.textContent = '✓ Custom prompt ready — scroll down to start practicing';
     status.style.color = 'var(--success)';
-
   } catch (err) {
     status.textContent = '⚠ Could not generate prompt. Please try again.';
     status.style.color = 'var(--danger)';
   } finally {
-    btn.textContent = 'Generate my prompt →';
-    btn.style.opacity = '1';
-    btn.style.cursor = 'pointer';
+    btn.textContent = 'Generate my prompt →'; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
   }
 }
+
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-// ─── RENDER FEEDBACK ───────────────────────────────────────────────
+
+// ─── RENDER FEEDBACK (Quick Practice) ──────────────────────────────
 async function renderFeedback(f, transcript, wpm, duration) {
   const conf    = parseFloat(f.confidence_score);
   const clar    = parseFloat(f.clarity_score);
-  const overall = f.overall_score
-    ? parseFloat(f.overall_score)
-    : parseFloat(((conf + clar) / 2).toFixed(1));
+  const overall = f.overall_score ? parseFloat(f.overall_score) : parseFloat(((conf + clar) / 2).toFixed(1));
 
   setScoreEl('scoreConfidence', conf, 10, 'benchConfidence');
   setScoreEl('scoreClarity',    clar, 10, 'benchClarity');
@@ -1322,7 +1582,6 @@ async function renderFeedback(f, transcript, wpm, duration) {
 
   state.currentSessionScore = overall;
 
-  // Beat your score — compare against pre-loaded last session score
   if (state.lastSessionScore > 0 && overall > state.lastSessionScore) {
     const delta = (overall - state.lastSessionScore).toFixed(1);
     const win   = document.getElementById('microWin');
@@ -1330,47 +1589,24 @@ async function renderFeedback(f, transcript, wpm, duration) {
     win.classList.add('visible');
   }
 
-  // Save to Firestore
   const sessionData = {
-    timestamp:    firebase.firestore.FieldValue.serverTimestamp(),
-    scenario:     scenarios[state.currentScenario].tag,
-    prompt:       scenarios[state.currentScenario].prompt,
-    transcript:   transcript,
-    wpm:          wpm,
-    duration:     duration,
-    scores: {
-      confidence: conf,
-      clarity:    clar,
-      fillers:    f.filler_count,
-      pace:       f.pace_wpm || wpm,
-      overall:    overall
-    },
-    fix_1:        f.fix_1,
-    fix_2:        f.fix_2,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    scenario:  scenarios[state.currentScenario].tag,
+    prompt:    scenarios[state.currentScenario].prompt,
+    transcript, wpm, duration,
+    scores: { confidence: conf, clarity: clar, fillers: f.filler_count, pace: f.pace_wpm || wpm, overall },
+    fix_1: f.fix_1, fix_2: f.fix_2,
     better_version: f.better_version,
-    filler_words: f.filler_words || '',
-    pace_label:   f.pace_label   || ''
+    filler_words: f.filler_words || '', pace_label: f.pace_label || ''
   };
-
   await saveSession(state.uid, sessionData);
 
-  // Show progress banner
-  if (state.lastSessionScore > 0) {
-    showProgressBanner(state.lastSessionScore, overall);
-  }
-
-  // Update last score for next retry within same session
+  if (state.lastSessionScore > 0) showProgressBanner(state.lastSessionScore, overall);
   state.lastSessionScore = overall;
-
-  // Refresh stats bar
   await renderStatsBar();
-  await updateStreak();
 
-  // Feedback capture every 3 sessions
   const stats = await getSessionStats(state.uid);
-  if (stats && stats.total % 3 === 0) {
-    document.getElementById('feedbackCapture').classList.add('visible');
-  }
+  if (stats && stats.total % 3 === 0) document.getElementById('feedbackCapture').classList.add('visible');
 
   document.getElementById('feedbackSection').classList.add('visible');
   document.getElementById('recordBtn').className   = 'record-btn';
@@ -1381,26 +1617,26 @@ async function renderFeedback(f, transcript, wpm, duration) {
 
 // ─── SCORE HELPERS ─────────────────────────────────────────────────
 function setScoreEl(id, val, max, benchId) {
-  const el  = document.getElementById(id);
+  const el = document.getElementById(id);
   el.textContent = val;
   const pct = val / max;
-  el.className   = 'sc-val ' + (pct >= 0.75 ? 'good' : pct >= 0.5 ? 'mid' : 'bad');
+  el.className = 'sc-val ' + (pct >= 0.75 ? 'good' : pct >= 0.5 ? 'mid' : 'bad');
   if (benchId) setBenchLabel(benchId, pct);
 }
 
 function setBenchLabel(id, pct) {
   const el = document.getElementById(id);
-  if      (pct >= 0.85) { el.textContent = 'Excellent';       el.className = 'sc-bench excellent'; }
-  else if (pct >= 0.65) { el.textContent = 'Strong';          el.className = 'sc-bench strong'; }
-  else if (pct >= 0.45) { el.textContent = 'Keep going';      el.className = 'sc-bench average'; }
-  else                  { el.textContent = 'Room to grow';    el.className = 'sc-bench below'; }
+  if      (pct >= 0.85) { el.textContent = 'Excellent';    el.className = 'sc-bench excellent'; }
+  else if (pct >= 0.65) { el.textContent = 'Strong';       el.className = 'sc-bench strong'; }
+  else if (pct >= 0.45) { el.textContent = 'Keep going';   el.className = 'sc-bench average'; }
+  else                  { el.textContent = 'Room to grow'; el.className = 'sc-bench below'; }
 }
 
 function setBenchFiller(id, count) {
   const el = document.getElementById(id);
-  if      (count <= 2) { el.textContent = 'Excellent';     el.className = 'sc-bench excellent'; }
-  else if (count <= 5) { el.textContent = 'Keep going';    el.className = 'sc-bench average'; }
-  else                 { el.textContent = 'Room to grow';  el.className = 'sc-bench below'; }
+  if      (count <= 2) { el.textContent = 'Excellent';    el.className = 'sc-bench excellent'; }
+  else if (count <= 5) { el.textContent = 'Keep going';   el.className = 'sc-bench average'; }
+  else                 { el.textContent = 'Room to grow'; el.className = 'sc-bench below'; }
 }
 
 function setBenchPace(id, label) {
@@ -1411,7 +1647,7 @@ function setBenchPace(id, label) {
   else                       { el.textContent = 'Average';  el.className = 'sc-bench average'; }
 }
 
-// ─── NAVIGATION ────────────────────────────────────────────────────
+// ─── NAVIGATION (Quick Practice) ───────────────────────────────────
 function retryPrompt() {
   document.getElementById('feedbackSection').classList.remove('visible');
   document.getElementById('transcriptBox').classList.remove('visible');
@@ -1435,10 +1671,361 @@ function selectFeedback(btn, val) {
 }
 
 function submitFeedback() {
-  console.log('Feedback:', state.feedbackChoice, document.getElementById('feedbackText').value);
-  document.getElementById('feedbackCapture').innerHTML =
-    '<div style="color:var(--success);font-size:13px;">✓ Thanks. This helps us improve.</div>';
+  document.getElementById('feedbackCapture').innerHTML = '<div style="color:var(--success);font-size:13px;">✓ Thanks. This helps us improve.</div>';
 }
+
+// ════════════════════════════════════════════════
+// INTERVIEW PREP MODE
+// ════════════════════════════════════════════════
+
+async function generateInterviewQuestions() {
+  const background      = document.getElementById('ipBackground').value.trim();
+  const jobDescription  = document.getElementById('ipJobDescription').value.trim();
+
+  if (!background || background.length < 10) {
+    document.getElementById('ipStatus').textContent = '⚠ Please add a background summary first.';
+    return;
+  }
+  if (!jobDescription || jobDescription.length < 20) {
+    document.getElementById('ipStatus').textContent = '⚠ Please paste the job description first.';
+    return;
+  }
+
+  const btn = document.getElementById('ipGenerateBtn');
+  btn.disabled = true;
+  btn.textContent = 'Analysing gaps...';
+  document.getElementById('ipStatus').textContent = 'Running gap analysis — this takes about 10 seconds...';
+  document.getElementById('ipGapsCard').classList.remove('visible');
+  document.getElementById('ipQuestionArea').classList.remove('visible');
+  document.getElementById('ipComplete').classList.remove('visible');
+
+  try {
+    const res = await fetch(BACKEND + '/api/interview-prep', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ background, jobDescription })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Could not generate questions');
+    }
+
+    const data = await res.json();
+    ipState.questions    = data.questions;
+    ipState.currentIndex = 0;
+
+    // Show gaps
+    const gapsList = document.getElementById('ipGapsList');
+    if (data.gaps && data.gaps.length) {
+      gapsList.innerHTML = data.gaps.map((g, i) =>
+        `<div class="ip-gap-item"><span class="ip-gap-num">0${i+1}</span><span>${g}</span></div>`
+      ).join('');
+      document.getElementById('ipGapsCard').classList.add('visible');
+    }
+
+    // Build progress dots
+    buildProgressDots();
+
+    // Load first question
+    loadInterviewQuestion(0);
+
+    // Hide input phase
+    document.getElementById('ipInputPhase').style.display = 'none';
+    document.getElementById('ipStatus').textContent = '';
+
+  } catch (err) {
+    document.getElementById('ipStatus').textContent = '⚠ ' + err.message;
+    btn.disabled = false;
+    btn.textContent = 'Analyse gaps and generate questions →';
+  }
+}
+
+function buildProgressDots() {
+  const container = document.getElementById('ipProgressDots');
+  container.innerHTML = '';
+  for (let i = 0; i < 6; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'ip-dot' + (i === 0 ? ' active' : '');
+    dot.id = `ipDot${i}`;
+    container.appendChild(dot);
+  }
+}
+
+function loadInterviewQuestion(index) {
+  const q = ipState.questions[index];
+  if (!q) return;
+
+  ipState.currentIndex = index;
+
+  // Update progress
+  document.getElementById('ipProgressLabel').textContent = `Question ${index + 1} of 6`;
+  for (let i = 0; i < 6; i++) {
+    const dot = document.getElementById(`ipDot${i}`);
+    if (!dot) continue;
+    dot.className = 'ip-dot' + (i < index ? ' done' : i === index ? ' active' : '');
+  }
+
+  // Difficulty badge
+  const badge = document.getElementById('ipDifficultyBadge');
+  badge.textContent = q.difficulty;
+  badge.className   = `ip-difficulty-badge ${q.difficulty}`;
+
+  // Question text
+  document.getElementById('ipQuestionText').textContent = q.text;
+
+  // Hints
+  document.getElementById('ipHintsList').innerHTML = (q.hints || []).map(h =>
+    `<div class="ip-hint-item">${h}</div>`
+  ).join('');
+
+  // Logic structure
+  document.getElementById('ipStructureList').innerHTML = (q.logic_structure || []).map(s =>
+    `<div class="ip-structure-item">${s}</div>`
+  ).join('');
+
+  // Reset recording state for this question
+  resetIpRecordingUI();
+
+  // Show question area
+  document.getElementById('ipQuestionArea').classList.add('visible');
+  document.getElementById('ipQuestionArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function resetIpRecordingUI() {
+  // Clear any active recording
+  if (ipState.isRecording) {
+    ipState.mediaRecorder?.stop();
+    ipState.mediaRecorder?.stream?.getTracks().forEach(t => t.stop());
+    ipState.isRecording = false;
+  }
+  clearInterval(ipState.timerInterval);
+
+  document.getElementById('ipFeedbackSection').classList.remove('visible');
+  document.getElementById('ipTranscriptBox').classList.remove('visible');
+  document.getElementById('ipNextBtn').classList.remove('visible');
+  document.getElementById('ipReplayBtn').classList.remove('visible');
+  document.getElementById('ipRecordStatus').textContent = 'Tap to answer this question';
+  document.getElementById('ipRecordStatus').className   = 'record-status';
+  document.getElementById('ipRecordBtn').className      = 'record-btn';
+  document.getElementById('ipWaveform').classList.remove('active');
+  resetIpTimer();
+}
+
+// ─── IP TIMER ─────────────────────────────────────────────────────
+function resetIpTimer() {
+  clearInterval(ipState.timerInterval);
+  ipState.timeLeft = 90;
+  updateIpTimerDisplay();
+  document.getElementById('ipTimerFill').classList.remove('recording');
+}
+
+function updateIpTimerDisplay() {
+  document.getElementById('ipTimerNum').textContent = ipState.timeLeft;
+  const progress = (90 - ipState.timeLeft) / 90;
+  document.getElementById('ipTimerFill').style.strokeDashoffset = 283 * (1 - progress);
+}
+
+function startIpTimer() {
+  ipState.timerInterval = setInterval(() => {
+    ipState.timeLeft--;
+    updateIpTimerDisplay();
+    if (ipState.timeLeft <= 0) stopIpRecording();
+  }, 1000);
+}
+
+// ─── IP RECORDING ─────────────────────────────────────────────────
+async function toggleIpRecord() {
+  if (ipState.isRecording) { stopIpRecording(); } else { startIpRecording(); }
+}
+
+async function startIpRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    ipState.audioChunks = [];
+    ipState.audioBlob   = null;
+
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm'
+      : MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '';
+
+    ipState.mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+    ipState.audioMimeType = ipState.mediaRecorder.mimeType || mimeType || 'audio/webm';
+    ipState.mediaRecorder.ondataavailable = e => { if (e.data.size > 0) ipState.audioChunks.push(e.data); };
+    ipState.mediaRecorder.onstop = processIpAudio;
+    ipState.mediaRecorder.start(250);
+    ipState.isRecording = true;
+    ipState.timeLeft    = 90;
+
+    document.getElementById('ipRecordBtn').className   = 'record-btn recording';
+    document.getElementById('ipTimerFill').classList.add('recording');
+    document.getElementById('ipWaveform').classList.add('active');
+    document.getElementById('ipRecordStatus').textContent = 'Recording... tap to stop';
+    document.getElementById('ipRecordStatus').className   = 'record-status active';
+    document.getElementById('ipFeedbackSection').classList.remove('visible');
+    document.getElementById('ipTranscriptBox').classList.remove('visible');
+    document.getElementById('ipReplayBtn').classList.remove('visible');
+
+    try { ipState.wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
+    startIpTimer();
+  } catch (e) {
+    document.getElementById('ipRecordStatus').textContent = 'Microphone access denied. Please allow mic.';
+  }
+}
+
+function stopIpRecording() {
+  if (!ipState.isRecording) return;
+  clearInterval(ipState.timerInterval);
+  ipState.isRecording = false;
+  if (ipState.wakeLock) { ipState.wakeLock.release(); ipState.wakeLock = null; }
+  ipState.mediaRecorder.stop();
+  ipState.mediaRecorder.stream.getTracks().forEach(t => t.stop());
+  document.getElementById('ipRecordBtn').className = 'record-btn disabled';
+  document.getElementById('ipWaveform').classList.remove('active');
+  document.getElementById('ipTimerFill').classList.remove('recording');
+  document.getElementById('ipRecordStatus').textContent = 'Processing your audio...';
+  document.getElementById('ipRecordStatus').className   = 'record-status processing';
+}
+
+function replayIpAudio() {
+  if (!ipState.audioBlob) return;
+  if (ipState.replayAudio) {
+    ipState.replayAudio.pause(); ipState.replayAudio.currentTime = 0; ipState.replayAudio = null;
+    document.getElementById('ipReplayBtn').textContent = '▶ Replay your answer'; return;
+  }
+  const url = URL.createObjectURL(ipState.audioBlob);
+  const audio = new Audio(url);
+  ipState.replayAudio = audio;
+  document.getElementById('ipReplayBtn').textContent = '◼ Stop replay';
+  audio.play();
+  audio.onended = () => { ipState.replayAudio = null; document.getElementById('ipReplayBtn').textContent = '▶ Replay your answer'; };
+}
+
+// ─── PROCESS IP AUDIO ─────────────────────────────────────────────
+async function processIpAudio() {
+  const blob = new Blob(ipState.audioChunks, { type: ipState.audioMimeType || 'audio/mp4' });
+  ipState.audioBlob = blob;
+
+  try {
+    document.getElementById('ipRecordStatus').textContent = 'Uploading audio...';
+    const transcribeRes = await fetch(BACKEND + '/api/transcribe', { method: 'POST', body: blob });
+    if (!transcribeRes.ok) { const err = await transcribeRes.json(); throw new Error(err.error || 'Upload failed'); }
+    const { id } = await transcribeRes.json();
+
+    document.getElementById('ipRecordStatus').textContent = 'Transcribing your speech...';
+    let transcript = null; let elapsed = 0;
+    for (let i = 0; i < 20; i++) {
+      await sleep(3000); elapsed += 3;
+      if (elapsed === 15) document.getElementById('ipRecordStatus').textContent = 'Taking a moment — please wait...';
+      const statusRes  = await fetch(BACKEND + '/api/status?id=' + id);
+      const statusData = await statusRes.json();
+      if (statusData.status === 'completed') { transcript = statusData.text; break; }
+      if (statusData.status === 'error') throw new Error('Transcription failed. Try again.');
+    }
+
+    if (!transcript) throw new Error('Took too long. Please try again.');
+    if (transcript.trim().length < 5) throw new Error("Couldn't hear you clearly. Try speaking closer to the mic.");
+
+    document.getElementById('ipTranscriptText').innerHTML = highlightFillers(transcript);
+    document.getElementById('ipTranscriptBox').classList.add('visible');
+    document.getElementById('ipReplayBtn').classList.add('visible');
+    document.getElementById('ipRecordStatus').textContent = 'Analysing your response...';
+
+    await getIpFeedback(transcript);
+
+  } catch (err) {
+    document.getElementById('ipRecordBtn').className   = 'record-btn';
+    document.getElementById('ipReplayBtn').classList.add('visible');
+    document.getElementById('ipRecordStatus').textContent = '⚠ ' + err.message;
+    document.getElementById('ipRecordStatus').className   = 'record-status';
+  }
+}
+
+// ─── IP FEEDBACK ──────────────────────────────────────────────────
+async function getIpFeedback(transcript) {
+  const q = ipState.questions[ipState.currentIndex];
+  const scenario = {
+    context: `Interview question: ${q.difficulty} level — ${q.text}`,
+    prompt:  q.text
+  };
+  const spokenWords = transcript.split(' ').length;
+  const duration    = (90 - ipState.timeLeft) || 60;
+  const wpm         = Math.round((spokenWords / duration) * 60);
+
+  const res = await fetch(BACKEND + '/api/feedback', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ transcript, scenario, wpm, duration })
+  });
+  if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Feedback failed'); }
+  const feedback = await res.json();
+  renderIpFeedback(feedback, wpm);
+}
+
+function renderIpFeedback(f, wpm) {
+  const conf    = parseFloat(f.confidence_score);
+  const clar    = parseFloat(f.clarity_score);
+
+  // Reuse setScoreEl with ip- prefixed IDs
+  setScoreEl('ipScoreConfidence', conf, 10, 'ipBenchConfidence');
+  setScoreEl('ipScoreClarity',    clar, 10, 'ipBenchClarity');
+
+  document.getElementById('ipScoreFillers').textContent = f.filler_count;
+  document.getElementById('ipScoreFillers').className   = 'sc-val ' + (f.filler_count > 8 ? 'bad' : f.filler_count > 3 ? 'mid' : 'good');
+  document.getElementById('ipFillerSub').textContent    = f.filler_words || 'detected';
+  setBenchFiller('ipBenchFillers', f.filler_count);
+
+  document.getElementById('ipScorePace').textContent = f.pace_wpm || wpm;
+  document.getElementById('ipScorePace').className   = 'sc-val ' + (f.pace_label === 'good' ? 'good' : 'mid');
+  document.getElementById('ipPaceSub').textContent   = (f.pace_label || '') + ' pace';
+  setBenchPace('ipBenchPace', f.pace_label);
+
+  document.getElementById('ipFix1').textContent         = f.fix_1;
+  document.getElementById('ipFix2').textContent         = f.fix_2;
+  document.getElementById('ipBetterVersion').textContent = f.better_version;
+
+  document.getElementById('ipFeedbackSection').classList.add('visible');
+  document.getElementById('ipRecordBtn').className   = 'record-btn';
+  document.getElementById('ipRecordStatus').textContent = 'Done! See analysis below.';
+  document.getElementById('ipRecordStatus').className   = 'record-status';
+
+  // Show next button — label changes on last question
+  const nextBtn = document.getElementById('ipNextBtn');
+  nextBtn.textContent = ipState.currentIndex < 5 ? `Next Question (${ipState.currentIndex + 2} of 6) →` : 'Finish Session →';
+  nextBtn.classList.add('visible');
+
+  document.getElementById('ipFeedbackSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+function nextInterviewQuestion() {
+  const next = ipState.currentIndex + 1;
+  if (next >= 6) {
+    // Session complete
+    document.getElementById('ipQuestionArea').classList.remove('visible');
+    document.getElementById('ipGapsCard').classList.remove('visible');
+    document.getElementById('ipComplete').classList.add('visible');
+    document.getElementById('ipComplete').scrollIntoView({ behavior: 'smooth' });
+  } else {
+    loadInterviewQuestion(next);
+  }
+}
+
+function restartInterviewPrep() {
+  // Reset everything and show input phase again
+  ipState.questions    = [];
+  ipState.currentIndex = 0;
+  document.getElementById('ipComplete').classList.remove('visible');
+  document.getElementById('ipQuestionArea').classList.remove('visible');
+  document.getElementById('ipGapsCard').classList.remove('visible');
+  document.getElementById('ipInputPhase').style.display = 'block';
+  document.getElementById('ipBackground').value         = '';
+  document.getElementById('ipJobDescription').value     = '';
+  document.getElementById('ipStatus').textContent       = '';
+  const btn = document.getElementById('ipGenerateBtn');
+  btn.disabled    = false;
+  btn.textContent = 'Analyse gaps and generate questions →';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 </script>
 </body>
 </html>
