@@ -5,538 +5,288 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SpeakUp — Practice Before It Matters.</title>
 
-<!-- Firebase SDK (CDN) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<!-- PDF.js — client-side PDF text extraction, no backend needed -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Poppins:wght@400;500;600&display=swap');
 
 :root {
-    --bg: #F0F2F8;
-    --surface: #FFFFFF;
-    --surface2: #EEF2FF;
-    --border: #E0E4F0;
-    --accent: #4F46E5;
-    --accent2: #7C3AED;
-    --text: #1E1B4B;
-    --muted: #6B7280;
-    --danger: #DC2626;
-    --success: #059669;
-  }
+  --bg: #F0F2F8;
+  --surface: #FFFFFF;
+  --surface2: #EEF2FF;
+  --border: #E0E4F0;
+  --accent: #4F46E5;
+  --accent2: #7C3AED;
+  --text: #1E1B4B;
+  --muted: #6B7280;
+  --danger: #DC2626;
+  --success: #059669;
+  --amber: #D97706;
+}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Poppins', sans-serif; min-height: 100vh; overflow-x: hidden; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Poppins', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+/* ─── LOGIN ─── */
+#loginScreen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
+.login-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 48px 40px; max-width: 400px; width: 100%; text-align: center; }
+.login-logo { font-family: 'Montserrat', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
+.login-logo span { color: var(--accent); }
+.login-tagline { font-size: 12px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 40px; }
+.login-divider { width: 40px; height: 1px; background: var(--border); margin: 0 auto 32px; }
+.login-heading { font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+.login-sub { font-size: 12px; color: var(--muted); line-height: 1.7; margin-bottom: 32px; }
+.google-btn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; padding: 14px 20px; background: var(--accent); color: #fff; border: none; border-radius: 10px; font-family: 'Montserrat', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+.google-btn:hover { transform: translateY(-1px); }
+.google-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+.login-error { display: none; margin-top: 16px; font-size: 12px; color: var(--danger); }
+.login-error.visible { display: block; }
+.login-footer { margin-top: 28px; font-size: 11px; color: var(--muted); line-height: 1.7; }
 
-  /* ─── LOGIN ─── */
-  #loginScreen {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 24px;
-  }
+/* ─── APP ─── */
+#appScreen { display: none; }
+.container { max-width: 680px; margin: 0 auto; padding: 24px 20px 60px; }
+.header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0 40px; border-bottom: 1px solid var(--border); margin-bottom: 40px; }
+.logo { font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+.logo span { color: var(--accent); }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.user-menu { display: flex; align-items: center; gap: 8px; cursor: pointer; position: relative; }
+.user-avatar { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); object-fit: cover; }
+.user-avatar-placeholder { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--accent); font-family: 'Montserrat', sans-serif; font-weight: 700; }
+.user-dropdown { display: none; position: absolute; top: calc(100% + 8px); right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 8px; min-width: 180px; z-index: 100; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+.user-dropdown.open { display: block; }
+.user-dropdown-name { padding: 8px 10px 4px; font-size: 12px; color: var(--text); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-dropdown-email { padding: 0 10px 10px; font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--border); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.signout-btn { width: 100%; padding: 9px 10px; background: transparent; border: none; color: var(--danger); font-family: 'Poppins', sans-serif; font-size: 12px; text-align: left; cursor: pointer; border-radius: 6px; transition: background 0.15s; }
+.signout-btn:hover { background: rgba(255,74,74,0.08); }
 
-  .login-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 48px 40px;
-    max-width: 400px;
-    width: 100%;
-    text-align: center;
-  }
+/* ─── MODE TOGGLE ─── */
+.mode-toggle { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 4px; margin-bottom: 36px; gap: 4px; }
+.mode-tab { flex: 1; padding: 12px 16px; background: transparent; border: none; border-radius: 9px; font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 700; color: var(--muted); cursor: pointer; transition: all 0.2s; text-align: center; }
+.mode-tab.active { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(79,70,229,0.3); }
+.mode-tab:hover:not(.active) { color: var(--text); }
 
-  .login-logo { font-family: 'Montserrat', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
-  .login-logo span { color: var(--accent); }
-  .login-tagline { font-size: 12px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 40px; }
-  .login-divider { width: 40px; height: 1px; background: var(--border); margin: 0 auto 32px; }
-  .login-heading { font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 10px; }
-  .login-sub { font-size: 12px; color: var(--muted); line-height: 1.7; margin-bottom: 32px; }
+/* ─── STATS BAR ─── */
+.stats-bar { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 28px; overflow: hidden; }
+.stats-bar.visible { display: flex; }
+.stat-item { flex: 1; padding: 14px 16px; border-right: 1px solid var(--border); text-align: center; }
+.stat-item:last-child { border-right: none; }
+.stat-item .st-val { font-family: 'Montserrat', sans-serif; font-size: 20px; font-weight: 700; color: var(--accent); }
+.stat-item .st-label { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
 
-  .google-btn {
-    display: flex; align-items: center; justify-content: center; gap: 12px;
-    width: 100%; padding: 14px 20px;
-    background: var(--accent); color: #000;
-    border: none; border-radius: 10px;
-    font-family: 'Montserrat', sans-serif; font-size: 15px; font-weight: 700;
-    cursor: pointer; transition: all 0.2s;
-  }
-  .google-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(232,255,74,0.25); }
-  .google-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+/* ─── PROGRESS BANNER ─── */
+.progress-banner { display: none; background: var(--surface2); border: 1px solid var(--border); border-left: 3px solid var(--accent); padding: 16px 20px; border-radius: 8px; margin-bottom: 28px; font-size: 13px; }
+.progress-banner.visible { display: block; }
+.progress-banner .label { color: var(--muted); margin-bottom: 10px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+.score-compare { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.score-item { display: flex; flex-direction: column; gap: 2px; }
+.score-item .day { font-size: 11px; color: var(--muted); }
+.score-item .val { font-family: 'Montserrat', sans-serif; font-size: 24px; font-weight: 700; }
+.score-item .val.up { color: var(--success); }
+.score-item .val.same { color: var(--text); }
+.score-arrow { color: var(--accent); font-size: 20px; }
+.score-delta { font-size: 13px; font-weight: 500; align-self: flex-end; padding-bottom: 4px; }
+.score-delta.positive { color: var(--success); }
+.score-delta.negative { color: var(--danger); }
 
-  .login-error { display: none; margin-top: 16px; font-size: 12px; color: var(--danger); }
-  .login-error.visible { display: block; }
-  .login-footer { margin-top: 28px; font-size: 11px; color: var(--muted); line-height: 1.7; }
+.section-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+.scenario-nav { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.scenario-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); padding: 7px 14px; border-radius: 100px; font-family: 'Poppins', sans-serif; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+.scenario-btn:hover { border-color: var(--accent); color: var(--text); }
+.scenario-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 500; }
 
-  /* ─── APP ─── */
-  #appScreen { display: none; }
-  .container { max-width: 680px; margin: 0 auto; padding: 24px 20px 60px; }
+.prompt-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 28px; position: relative; overflow: hidden; }
+.prompt-card::before { content: '"'; position: absolute; top: -10px; left: 16px; font-size: 80px; color: var(--accent); opacity: 0.15; font-family: 'Montserrat', sans-serif; line-height: 1; }
+.prompt-text { font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 600; line-height: 1.5; position: relative; z-index: 1; }
+.prompt-sub { margin-top: 10px; font-size: 12px; color: var(--muted); }
 
-  .header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 20px 0 40px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 40px;
-  }
+/* ─── PINNED SCAFFOLD ─── */
+.pinned-scaffold { display: none; background: rgba(251,191,36,0.08); border: 1px solid rgba(217,119,6,0.25); border-left: 3px solid var(--amber); border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; animation: fadeUp 0.3s ease; }
+.pinned-scaffold.visible { display: block; }
+.pinned-scaffold-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--amber); margin-bottom: 12px; font-weight: 600; }
+.pinned-scaffold-item { font-size: 13px; color: var(--text); line-height: 1.6; padding: 7px 0 7px 12px; border-left: 2px solid rgba(217,119,6,0.3); margin-bottom: 6px; }
+.pinned-scaffold-item:last-child { margin-bottom: 0; }
 
-  .logo { font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
-  .logo span { color: var(--accent); }
-  .header-right { display: flex; align-items: center; gap: 12px; }
+.record-area { text-align: center; }
+.timer-svg { transform: rotate(-90deg); }
+.timer-track { fill: none; stroke: var(--surface2); stroke-width: 4; }
+.timer-fill { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 283; stroke-dashoffset: 283; transition: stroke-dashoffset 1s linear; }
+.timer-fill.recording { stroke: var(--danger); }
+.timer-label { position: absolute; display: flex; flex-direction: column; align-items: center; }
+.timer-num { font-family: 'Montserrat', sans-serif; font-size: 36px; font-weight: 700; line-height: 1; }
+.timer-unit { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
-  .streak-badge {
-    display: flex; align-items: center; gap: 8px;
-    background: var(--surface2); border: 1px solid var(--border);
-    padding: 8px 14px; border-radius: 100px;
-    font-size: 12px; color: var(--muted);
-  }
-  .streak-badge .fire { font-size: 16px; }
-  .streak-badge .count { color: var(--accent); font-weight: 500; }
+.record-btn { width: 80px; height: 80px; border-radius: 50%; border: none; background: var(--accent); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.record-btn:hover { transform: scale(1.05); }
+.record-btn.recording { background: var(--danger); animation: pulse 1.5s infinite; }
+.record-btn.disabled { background: var(--surface2); cursor: not-allowed; opacity: 0.5; }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,74,74,0.4); } 50% { box-shadow: 0 0 0 16px rgba(255,74,74,0); } }
 
-  .user-menu { display: flex; align-items: center; gap: 8px; cursor: pointer; position: relative; }
+.record-icon { width: 28px; height: 28px; }
+.record-status { margin-top: 14px; font-size: 13px; color: var(--muted); min-height: 20px; }
+.record-status.active { color: var(--danger); }
+.record-status.processing { color: var(--accent); }
 
-  .user-avatar { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); object-fit: cover; }
-  .user-avatar-placeholder {
-    width: 32px; height: 32px; border-radius: 50%;
-    border: 1px solid var(--border); background: var(--surface2);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; color: var(--accent);
-    font-family: 'Montserrat', sans-serif; font-weight: 700;
-  }
+.replay-btn { display: none; margin: 12px auto 0; padding: 8px 18px; background: transparent; border: 1px solid var(--border); border-radius: 100px; color: var(--muted); font-family: 'Poppins', sans-serif; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+.replay-btn.visible { display: inline-flex; align-items: center; gap: 6px; }
+.replay-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-  .user-dropdown {
-    display: none; position: absolute; top: calc(100% + 8px); right: 0;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 10px; padding: 8px; min-width: 180px;
-    z-index: 100; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  }
-  .user-dropdown.open { display: block; }
-  .user-dropdown-name { padding: 8px 10px 4px; font-size: 12px; color: var(--text); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .user-dropdown-email { padding: 0 10px 10px; font-size: 11px; color: var(--muted); border-bottom: 1px solid var(--border); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.transcript-box { display: none; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin: 20px 0; font-size: 13px; line-height: 1.7; }
+.transcript-box.visible { display: block; }
+.transcript-box .t-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.transcript-box .t-text { color: var(--text); }
 
-  .signout-btn {
-    width: 100%; padding: 9px 10px;
-    background: transparent; border: none;
-    color: var(--danger); font-family: 'Poppins', sans-serif;
-    font-size: 12px; text-align: left; cursor: pointer;
-    border-radius: 6px; transition: background 0.15s;
-  }
-  .signout-btn:hover { background: rgba(255,74,74,0.08); }
+.feedback-section { display: none; margin-top: 32px; animation: fadeUp 0.4s ease; }
+.feedback-section.visible { display: block; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* ─── MODE TOGGLE ─── */
-  .mode-toggle {
-    display: flex;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 4px;
-    margin-bottom: 36px;
-    gap: 4px;
-  }
-  .mode-tab {
-    flex: 1; padding: 12px 16px;
-    background: transparent; border: none;
-    border-radius: 9px;
-    font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 700;
-    color: var(--muted); cursor: pointer; transition: all 0.2s;
-    text-align: center;
-  }
-  .mode-tab.active {
-    background: var(--accent); color: #fff;
-    box-shadow: 0 2px 8px rgba(79,70,229,0.3);
-  }
-  .mode-tab:hover:not(.active) { color: var(--text); }
+.score-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+.score-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+.score-card .sc-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.score-card .sc-val { font-family: 'Montserrat', sans-serif; font-size: 32px; font-weight: 700; line-height: 1; }
+.score-card .sc-val.good { color: var(--success); }
+.score-card .sc-val.mid { color: var(--accent); }
+.score-card .sc-val.bad { color: var(--danger); }
+.score-card .sc-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.sc-bench { font-size: 10px; margin-top: 6px; padding: 3px 8px; border-radius: 100px; display: inline-block; }
+.sc-bench.excellent { background: rgba(5,150,105,0.1); color: var(--success); }
+.sc-bench.strong { background: rgba(79,70,229,0.1); color: var(--accent); }
+.sc-bench.average { background: rgba(255,107,53,0.12); color: var(--accent2); }
+.sc-bench.below { background: rgba(255,74,74,0.12); color: var(--danger); }
 
-  /* ─── STATS BAR ─── */
-  .stats-bar {
-    display: none;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    margin-bottom: 28px;
-    overflow: hidden;
-  }
-  .stats-bar.visible { display: flex; }
-  .stat-item {
-    flex: 1; padding: 14px 16px;
-    border-right: 1px solid var(--border);
-    text-align: center;
-  }
-  .stat-item:last-child { border-right: none; }
-  .stat-item .st-val { font-family: 'Montserrat', sans-serif; font-size: 20px; font-weight: 700; color: var(--accent); }
-  .stat-item .st-label { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+/* Thinking Patterns card — amber tint, not red */
+.thinking-card { background: var(--surface); border: 1px solid rgba(217,119,6,0.2); border-radius: 10px; padding: 16px; }
+.thinking-card .sc-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--amber); margin-bottom: 8px; }
+.thinking-card .sc-val { font-family: 'Montserrat', sans-serif; font-size: 32px; font-weight: 700; line-height: 1; color: var(--amber); }
+.thinking-card .sc-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.thinking-bench { font-size: 10px; margin-top: 6px; padding: 3px 8px; border-radius: 100px; display: inline-block; background: rgba(251,191,36,0.12); color: var(--amber); }
 
-  /* ─── PROGRESS BANNER ─── */
-  .progress-banner {
-    display: none;
-    background: var(--surface2); border: 1px solid var(--border);
-    border-left: 3px solid var(--accent);
-    padding: 16px 20px; border-radius: 8px; margin-bottom: 28px; font-size: 13px;
-  }
-  .progress-banner.visible { display: block; }
-  .progress-banner .label { color: var(--muted); margin-bottom: 10px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
-  .score-compare { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-  .score-item { display: flex; flex-direction: column; gap: 2px; }
-  .score-item .day { font-size: 11px; color: var(--muted); }
-  .score-item .val { font-family: 'Montserrat', sans-serif; font-size: 24px; font-weight: 700; }
-  .score-item .val.up { color: var(--success); }
-  .score-item .val.same { color: var(--text); }
-  .score-arrow { color: var(--accent); font-size: 20px; }
-  .score-delta { font-size: 13px; font-weight: 500; align-self: flex-end; padding-bottom: 4px; }
-  .score-delta.positive { color: var(--success); }
-  .score-delta.negative { color: var(--danger); }
+.fixes-box { background: var(--surface); border: 1px solid var(--accent); border-radius: 10px; padding: 18px 20px; margin-bottom: 20px; }
+.fixes-box .fx-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+.fix-item { display: flex; gap: 10px; font-size: 13px; line-height: 1.5; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.fix-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+.fix-num { color: var(--accent); font-weight: 500; min-width: 18px; }
 
-  .section-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
-  .scenario-nav { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.better-box { background: var(--surface2); border: 1px solid var(--border); border-left: 3px solid var(--success); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+.better-box .bv-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--success); margin-bottom: 12px; }
+.better-box .bv-text { font-size: 14px; line-height: 1.8; color: var(--text); font-style: italic; }
 
-  .scenario-btn {
-    background: var(--surface2); border: 1px solid var(--border);
-    color: var(--muted); padding: 7px 14px; border-radius: 100px;
-    font-family: 'Poppins', sans-serif; font-size: 12px;
-    cursor: pointer; transition: all 0.2s;
-  }
-  .scenario-btn:hover { border-color: var(--accent); color: var(--text); }
-  .scenario-btn.active { background: var(--accent); color: #ffffff; border-color: var(--accent); font-weight: 500; }
+.micro-win { display: none; background: linear-gradient(135deg, rgba(74,255,140,0.08), rgba(232,255,74,0.06)); border: 1px solid rgba(74,255,140,0.2); border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; font-size: 13px; color: var(--success); }
+.micro-win.visible { display: block; }
 
-  .prompt-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 24px; margin-bottom: 28px;
-    position: relative; overflow: hidden;
-  }
-  .prompt-card::before {
-    content: '"'; position: absolute; top: -10px; left: 16px;
-    font-size: 80px; color: var(--accent); opacity: 0.15;
-    font-family: 'Montserrat', sans-serif; line-height: 1;
-  }
-  .prompt-text { font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 600; line-height: 1.5; position: relative; z-index: 1; }
-  .prompt-sub { margin-top: 10px; font-size: 12px; color: var(--muted); }
+.retry-btn { width: 100%; padding: 16px; background: var(--accent); color: #fff; border: none; border-radius: 10px; font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; margin-bottom: 12px; }
+.retry-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(79,70,229,0.25); }
+.new-prompt-btn { width: 100%; padding: 14px; background: transparent; color: var(--muted); border: 1px solid var(--border); border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+.new-prompt-btn:hover { border-color: var(--text); color: var(--text); }
 
-  .record-area { text-align: center; }
+.feedback-capture { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-top: 20px; }
+.feedback-capture.visible { display: block; }
+.feedback-capture .fc-label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+.fc-q { font-size: 14px; margin-bottom: 10px; }
+.fc-options { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.fc-opt { padding: 8px 16px; border: 1px solid var(--border); border-radius: 100px; font-family: 'Poppins', sans-serif; font-size: 12px; background: var(--surface2); color: var(--text); cursor: pointer; transition: all 0.15s; }
+.fc-opt:hover, .fc-opt.selected { border-color: var(--accent); color: var(--accent); }
+.fc-text { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; color: var(--text); font-family: 'Poppins', sans-serif; font-size: 13px; resize: none; min-height: 72px; margin-bottom: 12px; outline: none; }
+.fc-text:focus { border-color: var(--accent); }
+.fc-submit { padding: 10px 20px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Poppins', sans-serif; font-size: 12px; cursor: pointer; transition: all 0.15s; }
+.fc-submit:hover { border-color: var(--accent); color: var(--accent); }
 
-  .timer-svg { transform: rotate(-90deg); }
-  .timer-track { fill: none; stroke: var(--surface2); stroke-width: 4; }
-  .timer-fill {
-    fill: none; stroke: var(--accent); stroke-width: 4;
-    stroke-linecap: round; stroke-dasharray: 283; stroke-dashoffset: 283;
-    transition: stroke-dashoffset 1s linear;
-  }
-  .timer-fill.recording { stroke: var(--danger); }
-  .timer-label { position: absolute; display: flex; flex-direction: column; align-items: center; }
-  .timer-num { font-family: 'Montserrat', sans-serif; font-size: 36px; font-weight: 700; line-height: 1; }
-  .timer-unit { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.waveform { display: none; justify-content: center; align-items: center; gap: 4px; height: 32px; margin: 12px 0; }
+.waveform.active { display: flex; }
+.wave-bar { width: 3px; background: var(--danger); border-radius: 2px; animation: wave 0.8s ease-in-out infinite; }
+.wave-bar:nth-child(1) { animation-delay: 0s; height: 8px; }
+.wave-bar:nth-child(2) { animation-delay: 0.1s; height: 20px; }
+.wave-bar:nth-child(3) { animation-delay: 0.2s; height: 28px; }
+.wave-bar:nth-child(4) { animation-delay: 0.3s; height: 16px; }
+.wave-bar:nth-child(5) { animation-delay: 0.4s; height: 24px; }
+.wave-bar:nth-child(6) { animation-delay: 0.5s; height: 12px; }
+.wave-bar:nth-child(7) { animation-delay: 0.3s; height: 22px; }
+.wave-bar:nth-child(8) { animation-delay: 0.15s; height: 10px; }
+@keyframes wave { 0%, 100% { transform: scaleY(0.4); opacity: 0.5; } 50% { transform: scaleY(1); opacity: 1; } }
 
-  .record-btn {
-    width: 80px; height: 80px; border-radius: 50%; border: none;
-    background: var(--accent); cursor: pointer;
-    display: inline-flex; align-items: center; justify-content: center;
-    transition: all 0.2s;
-  }
-  .record-btn:hover { transform: scale(1.05); }
-  .record-btn.recording { background: var(--danger); animation: pulse 1.5s infinite; }
-  .record-btn.disabled { background: var(--surface2); cursor: not-allowed; opacity: 0.5; }
+/* ─── INTERVIEW PREP ─── */
+#interviewPrepPanel { display: none; }
+#quickPracticePanel { display: block; }
 
-  @keyframes pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(255,74,74,0.4); }
-    50% { box-shadow: 0 0 0 16px rgba(255,74,74,0); }
-  }
+.ip-input-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+.ip-input-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.ip-input-desc { font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 12px; }
+.ip-textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; color: var(--text); font-family: 'Poppins', sans-serif; font-size: 13px; resize: none; outline: none; line-height: 1.6; }
+.ip-textarea:focus { border-color: var(--accent); }
 
-  .record-icon { width: 28px; height: 28px; }
-  .record-status { margin-top: 14px; font-size: 13px; color: var(--muted); min-height: 20px; }
-  .record-status.active { color: var(--danger); }
-  .record-status.processing { color: var(--accent); }
+/* ─── PDF UPLOAD ROW ─── */
+.pdf-upload-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.pdf-upload-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: var(--surface2); border: 1px dashed var(--border); border-radius: 8px; color: var(--muted); font-family: 'Poppins', sans-serif; font-size: 12px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+.pdf-upload-btn:hover { border-color: var(--accent); color: var(--accent); }
+.pdf-upload-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+.pdf-upload-status { font-size: 11px; color: var(--muted); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pdf-upload-status.success { color: var(--success); }
+.pdf-upload-status.error { color: var(--danger); }
 
-  .replay-btn {
-    display: none;
-    margin: 12px auto 0;
-    padding: 8px 18px;
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 100px;
-    color: var(--muted);
-    font-family: 'Poppins', sans-serif;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .replay-btn.visible { display: inline-flex; align-items: center; gap: 6px; }
-  .replay-btn:hover { border-color: var(--accent); color: var(--accent); }
+.ip-generate-btn { width: 100%; padding: 16px; background: var(--accent); color: #fff; border: none; border-radius: 10px; font-family: 'Montserrat', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; margin-top: 8px; }
+.ip-generate-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(79,70,229,0.25); }
+.ip-generate-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+.ip-status { margin-top: 12px; font-size: 12px; color: var(--muted); min-height: 18px; text-align: center; }
 
-  .transcript-box {
-    display: none; background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; padding: 16px; margin: 20px 0;
-    font-size: 13px; line-height: 1.7;
-  }
-  .transcript-box.visible { display: block; }
-  .transcript-box .t-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
-  .transcript-box .t-text { color: var(--text); }
+.ip-gaps-card { display: none; background: var(--surface2); border: 1px solid var(--border); border-left: 3px solid var(--accent2); border-radius: 10px; padding: 18px 20px; margin-bottom: 24px; animation: fadeUp 0.3s ease; }
+.ip-gaps-card.visible { display: block; }
+.ip-gaps-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent2); margin-bottom: 12px; }
+.ip-gap-item { font-size: 12px; color: var(--text); line-height: 1.6; padding: 8px 0; border-bottom: 1px solid var(--border); display: flex; gap: 10px; }
+.ip-gap-item:last-child { border-bottom: none; padding-bottom: 0; }
+.ip-gap-num { color: var(--accent2); font-weight: 600; min-width: 20px; }
 
-  .feedback-section { display: none; margin-top: 32px; animation: fadeUp 0.4s ease; }
-  .feedback-section.visible { display: block; }
+.ip-question-area { display: none; }
+.ip-question-area.visible { display: block; }
+.ip-progress-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.ip-progress-label { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+.ip-progress-dots { display: flex; gap: 6px; }
+.ip-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: all 0.3s; }
+.ip-dot.done { background: var(--success); }
+.ip-dot.active { background: var(--accent); transform: scale(1.3); }
 
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+.ip-difficulty-badge { display: inline-block; padding: 4px 12px; border-radius: 100px; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; font-weight: 600; margin-bottom: 14px; }
+.ip-difficulty-badge.Warmup { background: rgba(5,150,105,0.1); color: var(--success); }
+.ip-difficulty-badge.Experience { background: rgba(79,70,229,0.1); color: var(--accent); }
+.ip-difficulty-badge.Bridge { background: rgba(124,58,237,0.1); color: var(--accent2); }
+.ip-difficulty-badge.Pressure { background: rgba(220,38,38,0.1); color: var(--danger); }
 
-  .score-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+.ip-question-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; position: relative; overflow: hidden; animation: fadeUp 0.35s ease; }
+.ip-question-card::before { content: '"'; position: absolute; top: -10px; left: 16px; font-size: 80px; color: var(--accent); opacity: 0.1; font-family: 'Montserrat', sans-serif; line-height: 1; }
+.ip-question-text { font-family: 'Montserrat', sans-serif; font-size: 17px; font-weight: 600; line-height: 1.5; position: relative; z-index: 1; margin-bottom: 20px; }
+.ip-hints-section { margin-bottom: 16px; }
+.ip-hints-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.ip-hint-item { font-size: 12px; color: var(--muted); line-height: 1.6; padding: 7px 12px; border-left: 2px solid var(--border); margin-bottom: 6px; }
+.ip-structure-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+.ip-structure-item { font-size: 12px; color: var(--text); line-height: 1.6; padding: 7px 12px; border-left: 2px solid var(--accent); margin-bottom: 6px; background: var(--surface2); border-radius: 0 6px 6px 0; }
 
-  .score-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
-  .score-card .sc-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
-  .score-card .sc-val { font-family: 'Montserrat', sans-serif; font-size: 32px; font-weight: 700; line-height: 1; }
-  .score-card .sc-val.good { color: var(--success); }
-  .score-card .sc-val.mid { color: var(--accent); }
-  .score-card .sc-val.bad { color: var(--danger); }
-  .score-card .sc-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
-  .sc-bench { font-size: 10px; margin-top: 6px; padding: 3px 8px; border-radius: 100px; display: inline-block; }
-  .sc-bench.excellent { background: rgba(74,255,140,0.12); color: var(--success); }
-  .sc-bench.strong { background: rgba(232,255,74,0.12); color: var(--accent); }
-  .sc-bench.average { background: rgba(255,107,53,0.12); color: var(--accent2); }
-  .sc-bench.below { background: rgba(255,74,74,0.12); color: var(--danger); }
+.ip-next-btn { width: 100%; padding: 16px; background: var(--accent); color: #fff; border: none; border-radius: 10px; font-family: 'Montserrat', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; margin-top: 12px; display: none; }
+.ip-next-btn.visible { display: block; }
+.ip-next-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(79,70,229,0.25); }
 
-  .fixes-box { background: var(--surface); border: 1px solid var(--accent); border-radius: 10px; padding: 18px 20px; margin-bottom: 20px; }
-  .fixes-box .fx-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
-  .fix-item { display: flex; gap: 10px; font-size: 13px; line-height: 1.5; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
-  .fix-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
-  .fix-num { color: var(--accent); font-weight: 500; min-width: 18px; }
+.ip-complete { display: none; text-align: center; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 40px 32px; margin-top: 24px; animation: fadeUp 0.4s ease; }
+.ip-complete.visible { display: block; }
+.ip-complete-icon { font-size: 48px; margin-bottom: 16px; }
+.ip-complete-title { font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 12px; }
+.ip-complete-body { font-size: 13px; color: var(--muted); line-height: 1.8; margin-bottom: 28px; max-width: 400px; margin-left: auto; margin-right: auto; }
+.ip-restart-btn { padding: 14px 28px; background: transparent; border: 1px solid var(--border); border-radius: 10px; color: var(--muted); font-family: 'Poppins', sans-serif; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+.ip-restart-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-  .better-box { background: var(--surface2); border: 1px solid var(--border); border-left: 3px solid var(--success); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
-  .better-box .bv-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--success); margin-bottom: 12px; }
-  .better-box .bv-text { font-size: 14px; line-height: 1.8; color: var(--text); font-style: italic; }
-
-  .micro-win {
-    display: none;
-    background: linear-gradient(135deg, rgba(74,255,140,0.08), rgba(232,255,74,0.06));
-    border: 1px solid rgba(74,255,140,0.2);
-    border-radius: 10px; padding: 16px 20px; margin-bottom: 20px;
-    font-size: 13px; color: var(--success);
-  }
-  .micro-win.visible { display: block; }
-
-  .retry-btn {
-    width: 100%; padding: 16px; background: var(--accent); color: #fff;
-    border: none; border-radius: 10px;
-    font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 700;
-    cursor: pointer; transition: all 0.2s; margin-bottom: 12px;
-  }
-  .retry-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(79,70,229,0.25); }
-
-  .new-prompt-btn {
-    width: 100%; padding: 14px; background: transparent;
-    color: var(--muted); border: 1px solid var(--border);
-    border-radius: 10px; font-family: 'Poppins', sans-serif;
-    font-size: 13px; cursor: pointer; transition: all 0.2s;
-  }
-  .new-prompt-btn:hover { border-color: var(--text); color: var(--text); }
-
-  .feedback-capture { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-top: 20px; }
-  .feedback-capture.visible { display: block; }
-  .feedback-capture .fc-label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
-  .fc-q { font-size: 14px; margin-bottom: 10px; }
-  .fc-options { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-  .fc-opt {
-    padding: 8px 16px; border: 1px solid var(--border); border-radius: 100px;
-    font-family: 'Poppins', sans-serif; font-size: 12px;
-    background: var(--surface2); color: var(--text);
-    cursor: pointer; transition: all 0.15s;
-  }
-  .fc-opt:hover, .fc-opt.selected { border-color: var(--accent); color: var(--accent); }
-  .fc-text {
-    width: 100%; background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; padding: 12px; color: var(--text);
-    font-family: 'Poppins', sans-serif; font-size: 13px;
-    resize: none; min-height: 72px; margin-bottom: 12px; outline: none;
-  }
-  .fc-text:focus { border-color: var(--accent); }
-  .fc-submit {
-    padding: 10px 20px; background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; color: var(--text); font-family: 'Poppins', sans-serif;
-    font-size: 12px; cursor: pointer; transition: all 0.15s;
-  }
-  .fc-submit:hover { border-color: var(--accent); color: var(--accent); }
-
-  .waveform { display: none; justify-content: center; align-items: center; gap: 4px; height: 32px; margin: 12px 0; }
-  .waveform.active { display: flex; }
-  .wave-bar { width: 3px; background: var(--danger); border-radius: 2px; animation: wave 0.8s ease-in-out infinite; }
-  .wave-bar:nth-child(1) { animation-delay: 0s; height: 8px; }
-  .wave-bar:nth-child(2) { animation-delay: 0.1s; height: 20px; }
-  .wave-bar:nth-child(3) { animation-delay: 0.2s; height: 28px; }
-  .wave-bar:nth-child(4) { animation-delay: 0.3s; height: 16px; }
-  .wave-bar:nth-child(5) { animation-delay: 0.4s; height: 24px; }
-  .wave-bar:nth-child(6) { animation-delay: 0.5s; height: 12px; }
-  .wave-bar:nth-child(7) { animation-delay: 0.3s; height: 22px; }
-  .wave-bar:nth-child(8) { animation-delay: 0.15s; height: 10px; }
-
-  @keyframes wave {
-    0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
-    50% { transform: scaleY(1); opacity: 1; }
-  }
-
-  /* ─── INTERVIEW PREP STYLES ─── */
-  #interviewPrepPanel { display: none; }
-  #quickPracticePanel { display: block; }
-
-  .ip-input-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 20px;
-  }
-  .ip-input-label {
-    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 8px;
-  }
-  .ip-input-desc {
-    font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 12px;
-  }
-  .ip-textarea {
-    width: 100%; background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; padding: 12px; color: var(--text);
-    font-family: 'Poppins', sans-serif; font-size: 13px;
-    resize: none; outline: none; line-height: 1.6;
-  }
-  .ip-textarea:focus { border-color: var(--accent); }
-
-  .ip-generate-btn {
-    width: 100%; padding: 16px; background: var(--accent); color: #fff;
-    border: none; border-radius: 10px;
-    font-family: 'Montserrat', sans-serif; font-size: 15px; font-weight: 700;
-    cursor: pointer; transition: all 0.2s; margin-top: 8px;
-  }
-  .ip-generate-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(79,70,229,0.25); }
-  .ip-generate-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
-
-  .ip-status {
-    margin-top: 12px; font-size: 12px; color: var(--muted);
-    min-height: 18px; text-align: center;
-  }
-
-  /* Gap analysis display */
-  .ip-gaps-card {
-    display: none;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--accent2);
-    border-radius: 10px; padding: 18px 20px; margin-bottom: 24px;
-    animation: fadeUp 0.3s ease;
-  }
-  .ip-gaps-card.visible { display: block; }
-  .ip-gaps-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent2); margin-bottom: 12px; }
-  .ip-gap-item {
-    font-size: 12px; color: var(--text); line-height: 1.6;
-    padding: 8px 0; border-bottom: 1px solid var(--border);
-    display: flex; gap: 10px;
-  }
-  .ip-gap-item:last-child { border-bottom: none; padding-bottom: 0; }
-  .ip-gap-num { color: var(--accent2); font-weight: 600; min-width: 20px; }
-
-  /* Question card */
-  .ip-question-area { display: none; }
-  .ip-question-area.visible { display: block; }
-
-  .ip-progress-bar {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 20px;
-  }
-  .ip-progress-label {
-    font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase;
-  }
-  .ip-progress-dots { display: flex; gap: 6px; }
-  .ip-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--border); transition: all 0.3s;
-  }
-  .ip-dot.done { background: var(--success); }
-  .ip-dot.active { background: var(--accent); transform: scale(1.3); }
-
-  .ip-difficulty-badge {
-    display: inline-block; padding: 4px 12px; border-radius: 100px;
-    font-size: 10px; letter-spacing: 1px; text-transform: uppercase; font-weight: 600;
-    margin-bottom: 14px;
-  }
-  .ip-difficulty-badge.Warmup { background: rgba(5,150,105,0.1); color: var(--success); }
-  .ip-difficulty-badge.Experience { background: rgba(79,70,229,0.1); color: var(--accent); }
-  .ip-difficulty-badge.Bridge { background: rgba(124,58,237,0.1); color: var(--accent2); }
-  .ip-difficulty-badge.Pressure { background: rgba(220,38,38,0.1); color: var(--danger); }
-
-  .ip-question-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 24px; margin-bottom: 20px;
-    position: relative; overflow: hidden; animation: fadeUp 0.35s ease;
-  }
-  .ip-question-card::before {
-    content: '"'; position: absolute; top: -10px; left: 16px;
-    font-size: 80px; color: var(--accent); opacity: 0.1;
-    font-family: 'Montserrat', sans-serif; line-height: 1;
-  }
-  .ip-question-text {
-    font-family: 'Montserrat', sans-serif; font-size: 17px; font-weight: 600;
-    line-height: 1.5; position: relative; z-index: 1; margin-bottom: 20px;
-  }
-
-  .ip-hints-section { margin-bottom: 16px; }
-  .ip-hints-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
-  .ip-hint-item {
-    font-size: 12px; color: var(--muted); line-height: 1.6;
-    padding: 7px 12px; border-left: 2px solid var(--border); margin-bottom: 6px;
-  }
-
-  .ip-structure-section { }
-  .ip-structure-label { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
-  .ip-structure-item {
-    font-size: 12px; color: var(--text); line-height: 1.6;
-    padding: 7px 12px; border-left: 2px solid var(--accent);
-    margin-bottom: 6px; background: var(--surface2); border-radius: 0 6px 6px 0;
-  }
-
-  /* Next question btn (shown after feedback) */
-  .ip-next-btn {
-    width: 100%; padding: 16px; background: var(--accent); color: #fff;
-    border: none; border-radius: 10px;
-    font-family: 'Montserrat', sans-serif; font-size: 15px; font-weight: 700;
-    cursor: pointer; transition: all 0.2s; margin-top: 12px;
-    display: none;
-  }
-  .ip-next-btn.visible { display: block; }
-  .ip-next-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(79,70,229,0.25); }
-
-  /* Session complete screen */
-  .ip-complete {
-    display: none; text-align: center;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 16px; padding: 40px 32px; margin-top: 24px;
-    animation: fadeUp 0.4s ease;
-  }
-  .ip-complete.visible { display: block; }
-  .ip-complete-icon { font-size: 48px; margin-bottom: 16px; }
-  .ip-complete-title { font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 12px; }
-  .ip-complete-body { font-size: 13px; color: var(--muted); line-height: 1.8; margin-bottom: 28px; max-width: 400px; margin-left: auto; margin-right: auto; }
-  .ip-restart-btn {
-    padding: 14px 28px; background: transparent; border: 1px solid var(--border);
-    border-radius: 10px; color: var(--muted); font-family: 'Poppins', sans-serif;
-    font-size: 13px; cursor: pointer; transition: all 0.2s;
-  }
-  .ip-restart-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-  @media (max-width: 480px) {
-    .score-grid { grid-template-columns: repeat(2, 1fr); }
-    .prompt-text { font-size: 16px; }
-    .login-card { padding: 36px 24px; }
-    .stats-bar { flex-wrap: wrap; }
-    .stat-item { min-width: 50%; }
-    .mode-tab { font-size: 12px; padding: 10px 10px; }
-  }
-
-  .hidden { display: none !important; }
+@media (max-width: 480px) {
+  .score-grid { grid-template-columns: repeat(2, 1fr); }
+  .prompt-text { font-size: 16px; }
+  .login-card { padding: 36px 24px; }
+  .stats-bar { flex-wrap: wrap; }
+  .stat-item { min-width: 50%; }
+  .mode-tab { font-size: 12px; padding: 10px 10px; }
+  .pdf-upload-row { flex-wrap: wrap; }
+}
+.hidden { display: none !important; }
 </style>
 </head>
 <body>
@@ -563,7 +313,7 @@
   </div>
 </div>
 
-<!-- ─── FIRST SESSION INTRO MODAL ─── -->
+<!-- ─── INTRO MODAL ─── -->
 <div id="introModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:200; overflow-y:auto; padding:24px 20px;">
   <div style="max-width:560px; margin:0 auto; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:36px 32px;">
     <div style="font-family:'Montserrat',sans-serif; font-size:22px; font-weight:800; margin-bottom:6px;">Welcome to <span style="color:var(--accent)">SpeakUp</span></div>
@@ -574,34 +324,30 @@
       <div style="font-size:11px; color:var(--muted);">Before you speak: Name + background → Key strength → Forward-looking close</div>
     </div>
     <div style="font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:10px;">Sample answer that was recorded</div>
-    <div style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:14px 18px; margin-bottom:24px; font-size:13px; color:var(--muted); line-height:1.7; font-style:italic;">
-      "Hi, so, um, I'm Priya. I basically did my MBA from Pune and uh I have like two years of experience in sales. I am a very hardworking person and I like to give my best. So yeah, looking forward to working here."
-    </div>
+    <div style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:14px 18px; margin-bottom:24px; font-size:13px; color:var(--muted); line-height:1.7; font-style:italic;">"Hi, so, um, I'm Priya. I basically did my MBA from Pune and uh I have like two years of experience in sales. I am a very hardworking person and I like to give my best. So yeah, looking forward to working here."</div>
     <div style="font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:10px;">What the feedback looked like</div>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
       <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px;">
         <div style="font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:6px;">Confidence</div>
         <div style="font-family:'Montserrat',sans-serif; font-size:28px; font-weight:700; color:var(--accent);">4.5</div>
-        <div style="font-size:10px; margin-top:4px; padding:2px 8px; border-radius:100px; display:inline-block; background:rgba(255,107,53,0.12); color:var(--accent2);">Average</div>
+        <div style="font-size:10px; margin-top:4px; padding:2px 8px; border-radius:100px; display:inline-block; background:rgba(79,70,229,0.1); color:var(--accent);">Keep going</div>
       </div>
-      <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px;">
-        <div style="font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:6px;">Filler Words</div>
-        <div style="font-family:'Montserrat',sans-serif; font-size:28px; font-weight:700; color:var(--danger);">6</div>
-        <div style="font-size:10px; margin-top:4px; padding:2px 8px; border-radius:100px; display:inline-block; background:rgba(255,74,74,0.12); color:var(--danger);">Below Average</div>
+      <div style="background:var(--surface); border:1px solid rgba(217,119,6,0.2); border-radius:10px; padding:14px;">
+        <div style="font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--amber); margin-bottom:6px;">Thinking Patterns</div>
+        <div style="font-family:'Montserrat',sans-serif; font-size:28px; font-weight:700; color:var(--amber);">6</div>
+        <div style="font-size:10px; margin-top:4px; padding:2px 8px; border-radius:100px; display:inline-block; background:rgba(251,191,36,0.12); color:var(--amber);">Some patterns noted</div>
       </div>
     </div>
     <div style="background:var(--surface); border:1px solid var(--accent); border-radius:10px; padding:16px 18px; margin-bottom:16px;">
       <div style="font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--accent); margin-bottom:10px;">Top 2 things to fix next time</div>
-      <div style="font-size:13px; color:var(--text); line-height:1.6; margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid var(--border);"><span style="color:var(--accent);">01 </span>You used "basically", "um", and "uh" four times in 30 seconds — record yourself and count them.</div>
+      <div style="font-size:13px; color:var(--text); line-height:1.6; margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid var(--border);"><span style="color:var(--accent);">01 </span>You used "basically", "um", and "uh" four times in 30 seconds — these appear when you're buying time between ideas.</div>
       <div style="font-size:13px; color:var(--text); line-height:1.6;"><span style="color:var(--accent);">02 </span>"I am a very hardworking person" is a claim with no proof — replace it with one specific result you delivered.</div>
     </div>
     <div style="background:var(--surface2); border:1px solid var(--border); border-left:3px solid var(--success); border-radius:10px; padding:16px 18px; margin-bottom:28px;">
       <div style="font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--success); margin-bottom:8px;">How a confident speaker would say it</div>
-      <div style="font-size:13px; color:var(--text); line-height:1.8; font-style:italic;">"Hi, I'm Priya. I have two years in B2B sales where I consistently hit 110% of my quarterly target. My strength is turning cold leads into long-term clients — I did that for 14 accounts in my last role. I'm keen to bring that same approach here and would love to understand the team's current pipeline challenges."</div>
+      <div style="font-size:13px; color:var(--text); line-height:1.8; font-style:italic;">"Hi, I'm Priya. I have two years in B2B sales where I consistently hit 110% of my quarterly target. My strength is turning cold leads into long-term clients — I did that for 14 accounts in my last role. I'm keen to bring that same approach here."</div>
     </div>
-    <button onclick="closeIntro()" style="width:100%; padding:16px; background:var(--accent); color:#fff; border:none; border-radius:10px; font-family:'Montserrat',sans-serif; font-size:16px; font-weight:700; cursor:pointer;">
-      Got it — start practising →
-    </button>
+    <button onclick="closeIntro()" style="width:100%; padding:16px; background:var(--accent); color:#fff; border:none; border-radius:10px; font-family:'Montserrat',sans-serif; font-size:16px; font-weight:700; cursor:pointer;">Got it — start practising →</button>
   </div>
 </div>
 
@@ -624,51 +370,32 @@
     </div>
   </div>
 
-  <!-- Stats bar -->
   <div class="stats-bar" id="statsBar">
-    <div class="stat-item">
-      <div class="st-val" id="statSessions">0</div>
-      <div class="st-label">Sessions</div>
-    </div>
-    <div class="stat-item">
-      <div class="st-val" id="statBest">—</div>
-      <div class="st-label">Best Score</div>
-    </div>
-    <div class="stat-item">
-      <div class="st-val" id="statAvg">—</div>
-      <div class="st-label">Avg Score</div>
-    </div>
+    <div class="stat-item"><div class="st-val" id="statSessions">0</div><div class="st-label">Sessions</div></div>
+    <div class="stat-item"><div class="st-val" id="statBest">—</div><div class="st-label">Best Score</div></div>
+    <div class="stat-item"><div class="st-val" id="statAvg">—</div><div class="st-label">Avg Score</div></div>
   </div>
 
-  <!-- Progress banner -->
   <div class="progress-banner" id="progressBanner">
     <div class="label">📈 Your Progress</div>
     <div class="score-compare">
-      <div class="score-item">
-        <span class="day">Last session</span>
-        <span class="val same" id="prevScoreDisplay">—</span>
-      </div>
+      <div class="score-item"><span class="day">Last session</span><span class="val same" id="prevScoreDisplay">—</span></div>
       <span class="score-arrow">→</span>
-      <div class="score-item">
-        <span class="day">This session</span>
-        <span class="val up" id="todayScoreDisplay">—</span>
-      </div>
+      <div class="score-item"><span class="day">This session</span><span class="val up" id="todayScoreDisplay">—</span></div>
       <span class="score-delta" id="scoreDeltaDisplay"></span>
     </div>
   </div>
 
-  <!-- ─── MODE TOGGLE ─── -->
   <div class="mode-toggle">
     <button class="mode-tab active" id="tabQuick" onclick="switchMode('quick')">⚡ Quick Practice</button>
     <button class="mode-tab" id="tabInterview" onclick="switchMode('interview')">🎯 Interview Prep</button>
   </div>
 
-  <!-- ═══════════════════════════════════════════ -->
-  <!-- QUICK PRACTICE PANEL                        -->
-  <!-- ═══════════════════════════════════════════ -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- QUICK PRACTICE                                     -->
+  <!-- ══════════════════════════════════════════════════ -->
   <div id="quickPracticePanel">
 
-    <!-- Custom prompt box -->
     <div style="margin-bottom:28px;">
       <div class="section-label">Practice something specific</div>
       <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px;">
@@ -691,26 +418,18 @@
       </div>
     </div>
 
-    <!-- Recording area -->
     <div class="record-area">
       <div style="position:relative; display:inline-flex; align-items:center; justify-content:center;">
         <svg class="timer-svg" width="120" height="120" viewBox="0 0 100 100">
           <circle class="timer-track" cx="50" cy="50" r="45"/>
           <circle class="timer-fill" id="timerFill" cx="50" cy="50" r="45"/>
         </svg>
-        <div class="timer-label">
-          <span class="timer-num" id="timerNum">45</span>
-          <span class="timer-unit">sec</span>
-        </div>
+        <div class="timer-label"><span class="timer-num" id="timerNum">45</span><span class="timer-unit">sec</span></div>
       </div>
-
       <div class="waveform" id="waveform">
-        <div class="wave-bar"></div><div class="wave-bar"></div>
-        <div class="wave-bar"></div><div class="wave-bar"></div>
-        <div class="wave-bar"></div><div class="wave-bar"></div>
-        <div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+        <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
       </div>
-
       <br>
       <button class="record-btn" id="recordBtn" onclick="toggleRecord()">
         <svg class="record-icon" viewBox="0 0 24 24" fill="none">
@@ -730,7 +449,6 @@
 
     <div class="feedback-section" id="feedbackSection">
       <div class="section-label" style="margin-bottom:16px">Your Analysis</div>
-
       <div class="score-grid">
         <div class="score-card">
           <div class="sc-label">Confidence</div>
@@ -738,11 +456,11 @@
           <div class="sc-sub">out of 10</div>
           <div class="sc-bench" id="benchConfidence"></div>
         </div>
-        <div class="score-card">
-          <div class="sc-label">Filler Words</div>
+        <div class="thinking-card">
+          <div class="sc-label">Thinking Patterns</div>
           <div class="sc-val" id="scoreFillers">—</div>
           <div class="sc-sub" id="fillerSub">detected</div>
-          <div class="sc-bench" id="benchFillers"></div>
+          <div class="thinking-bench" id="benchFillers"></div>
         </div>
         <div class="score-card">
           <div class="sc-label">Clarity</div>
@@ -757,70 +475,89 @@
           <div class="sc-bench" id="benchPace"></div>
         </div>
       </div>
-
       <div class="fixes-box">
         <div class="fx-label">Top 2 things to fix next time</div>
         <div class="fix-item"><span class="fix-num">01</span><span id="fix1">—</span></div>
         <div class="fix-item"><span class="fix-num">02</span><span id="fix2">—</span></div>
       </div>
-
       <div class="better-box">
         <div class="bv-label">How a confident speaker would say this</div>
         <div class="bv-text" id="betterVersion">—</div>
       </div>
-
       <div class="micro-win" id="microWin"></div>
-
       <button class="retry-btn" onclick="retryPrompt()">↺ Try Again — Beat Your Score</button>
       <button class="new-prompt-btn" onclick="nextPrompt()">Next Scenario →</button>
-
       <div class="feedback-capture" id="feedbackCapture">
         <div class="fc-label">Quick feedback (helps us improve)</div>
         <div class="fc-q">Was this useful?</div>
         <div class="fc-options">
-          <button class="fc-opt" onclick="selectFeedback(this, 'yes')">✓ Yes</button>
-          <button class="fc-opt" onclick="selectFeedback(this, 'somewhat')">~ Somewhat</button>
-          <button class="fc-opt" onclick="selectFeedback(this, 'no')">✕ No</button>
+          <button class="fc-opt" onclick="selectFeedback(this,'yes')">✓ Yes</button>
+          <button class="fc-opt" onclick="selectFeedback(this,'somewhat')">~ Somewhat</button>
+          <button class="fc-opt" onclick="selectFeedback(this,'no')">✕ No</button>
         </div>
         <textarea class="fc-text" id="feedbackText" placeholder="What felt off or missing? (optional)"></textarea>
         <button class="fc-submit" onclick="submitFeedback()">Submit →</button>
       </div>
     </div>
 
-  </div><!-- end #quickPracticePanel -->
+  </div><!-- end quickPracticePanel -->
 
-  <!-- ═══════════════════════════════════════════ -->
-  <!-- INTERVIEW PREP PANEL                        -->
-  <!-- ═══════════════════════════════════════════ -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- INTERVIEW PREP                                     -->
+  <!-- ══════════════════════════════════════════════════ -->
   <div id="interviewPrepPanel">
 
-    <!-- Input phase -->
     <div id="ipInputPhase">
+
+      <!-- Background input + Resume PDF upload -->
       <div class="ip-input-card">
         <div class="ip-input-label">Your Background</div>
         <div class="ip-input-desc">Current role, industry, and key experience in 1–2 sentences. Be specific — vague inputs produce generic questions.</div>
         <textarea class="ip-textarea" id="ipBackground" rows="3" placeholder="e.g. I'm a training manager at a financial services firm with 6 years of experience in L&D, onboarding, and AML compliance training. I'm applying for an L&D Manager role at a veterinary clinic chain."></textarea>
+        <div class="pdf-upload-row">
+          <label class="pdf-upload-btn" for="resumePdfInput">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="12" y1="18" x2="12" y2="12"/>
+              <line x1="9" y1="15" x2="15" y2="15"/>
+            </svg>
+            Upload Resume PDF
+          </label>
+          <input type="file" id="resumePdfInput" accept=".pdf" style="display:none;" onchange="extractPdf(this,'ipBackground','resumePdfStatus')">
+          <span class="pdf-upload-status" id="resumePdfStatus">or type above</span>
+        </div>
       </div>
 
+      <!-- JD input + JD PDF upload -->
       <div class="ip-input-card">
         <div class="ip-input-label">Job Description</div>
-        <div class="ip-input-desc">Paste the full JD. The more complete it is, the sharper the gap analysis.</div>
+        <div class="ip-input-desc">Paste the full JD or upload it as a PDF. The more complete it is, the sharper the gap analysis.</div>
         <textarea class="ip-textarea" id="ipJobDescription" rows="8" placeholder="Paste the job description here..."></textarea>
+        <div class="pdf-upload-row">
+          <label class="pdf-upload-btn" for="jdPdfInput">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="12" y1="18" x2="12" y2="12"/>
+              <line x1="9" y1="15" x2="15" y2="15"/>
+            </svg>
+            Upload JD PDF
+          </label>
+          <input type="file" id="jdPdfInput" accept=".pdf" style="display:none;" onchange="extractPdf(this,'ipJobDescription','jdPdfStatus')">
+          <span class="pdf-upload-status" id="jdPdfStatus">or paste above</span>
+        </div>
       </div>
 
-      <button class="ip-generate-btn" id="ipGenerateBtn" onclick="generateInterviewQuestions()">
-        Analyse gaps and generate questions →
-      </button>
+      <button class="ip-generate-btn" id="ipGenerateBtn" onclick="generateInterviewQuestions()">Analyse gaps and generate questions →</button>
       <div class="ip-status" id="ipStatus"></div>
     </div>
 
-    <!-- Gap analysis display -->
     <div class="ip-gaps-card" id="ipGapsCard">
-      <div class="ip-gaps-label">⚠ The 3 gaps this interview will test</div>
+      <div class="ip-gaps-label">What the interviewer is likely thinking</div>
       <div id="ipGapsList"></div>
     </div>
 
-    <!-- Question area -->
     <div class="ip-question-area" id="ipQuestionArea">
 
       <div class="ip-progress-bar">
@@ -830,40 +567,36 @@
 
       <div id="ipDifficultyBadge" class="ip-difficulty-badge"></div>
 
-      <div class="ip-question-card" id="ipQuestionCard">
+      <div class="ip-question-card">
         <div class="ip-question-text" id="ipQuestionText"></div>
-
         <div class="ip-hints-section">
           <div class="ip-hints-label">Before you speak</div>
           <div id="ipHintsList"></div>
         </div>
-
         <div class="ip-structure-section">
           <div class="ip-structure-label">Answer structure</div>
           <div id="ipStructureList"></div>
         </div>
       </div>
 
-      <!-- Recording area — Interview mode (90 sec timer) -->
+      <!-- PINNED SCAFFOLD — shown above record button on retry -->
+      <div class="pinned-scaffold" id="ipPinnedScaffold">
+        <div class="pinned-scaffold-label">Structure your next attempt around these</div>
+        <div id="ipScaffoldItems"></div>
+      </div>
+
       <div class="record-area">
         <div style="position:relative; display:inline-flex; align-items:center; justify-content:center;">
           <svg class="timer-svg" width="120" height="120" viewBox="0 0 100 100">
             <circle class="timer-track" cx="50" cy="50" r="45"/>
             <circle class="timer-fill" id="ipTimerFill" cx="50" cy="50" r="45"/>
           </svg>
-          <div class="timer-label">
-            <span class="timer-num" id="ipTimerNum">90</span>
-            <span class="timer-unit">sec</span>
-          </div>
+          <div class="timer-label"><span class="timer-num" id="ipTimerNum">90</span><span class="timer-unit">sec</span></div>
         </div>
-
         <div class="waveform" id="ipWaveform">
-          <div class="wave-bar"></div><div class="wave-bar"></div>
-          <div class="wave-bar"></div><div class="wave-bar"></div>
-          <div class="wave-bar"></div><div class="wave-bar"></div>
-          <div class="wave-bar"></div><div class="wave-bar"></div>
+          <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+          <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
         </div>
-
         <br>
         <button class="record-btn" id="ipRecordBtn" onclick="toggleIpRecord()">
           <svg class="record-icon" viewBox="0 0 24 24" fill="none">
@@ -881,10 +614,8 @@
         <div class="t-text" id="ipTranscriptText"></div>
       </div>
 
-      <!-- Feedback for interview question -->
       <div class="feedback-section" id="ipFeedbackSection">
         <div class="section-label" style="margin-bottom:16px">Your Analysis</div>
-
         <div class="score-grid">
           <div class="score-card">
             <div class="sc-label">Confidence</div>
@@ -892,11 +623,11 @@
             <div class="sc-sub">out of 10</div>
             <div class="sc-bench" id="ipBenchConfidence"></div>
           </div>
-          <div class="score-card">
-            <div class="sc-label">Filler Words</div>
+          <div class="thinking-card">
+            <div class="sc-label">Thinking Patterns</div>
             <div class="sc-val" id="ipScoreFillers">—</div>
             <div class="sc-sub" id="ipFillerSub">detected</div>
-            <div class="sc-bench" id="ipBenchFillers"></div>
+            <div class="thinking-bench" id="ipBenchFillers"></div>
           </div>
           <div class="score-card">
             <div class="sc-label">Clarity</div>
@@ -911,25 +642,21 @@
             <div class="sc-bench" id="ipBenchPace"></div>
           </div>
         </div>
-
         <div class="fixes-box">
           <div class="fx-label">Top 2 things to fix next time</div>
           <div class="fix-item"><span class="fix-num">01</span><span id="ipFix1">—</span></div>
           <div class="fix-item"><span class="fix-num">02</span><span id="ipFix2">—</span></div>
         </div>
-
         <div class="better-box">
           <div class="bv-label">How a confident speaker would say this</div>
           <div class="bv-text" id="ipBetterVersion">—</div>
         </div>
-
-        <!-- Next question button -->
+        <button class="retry-btn" onclick="retryIpQuestion()">↺ Try This Question Again</button>
         <button class="ip-next-btn" id="ipNextBtn" onclick="nextInterviewQuestion()">Next Question →</button>
       </div>
 
     </div><!-- end ipQuestionArea -->
 
-    <!-- Session complete -->
     <div class="ip-complete" id="ipComplete">
       <div class="ip-complete-icon">✓</div>
       <div class="ip-complete-title">Session complete.</div>
@@ -937,13 +664,13 @@
       <button class="ip-restart-btn" onclick="restartInterviewPrep()">Start a new session →</button>
     </div>
 
-  </div><!-- end #interviewPrepPanel -->
+  </div><!-- end interviewPrepPanel -->
 
 </div>
-</div><!-- end #appScreen -->
+</div>
 
 <script>
-// ─── FIREBASE INIT ─────────────────────────────────────────────────
+// ─── FIREBASE ──────────────────────────────────────────────────────
 const firebaseConfig = {
   apiKey: "AIzaSyDe9ekuH8v5Oz8YOI59meQ_YzU5GZRSEbk",
   authDomain: "speakup-e1a51.firebaseapp.com",
@@ -952,135 +679,94 @@ const firebaseConfig = {
   messagingSenderId: "878263613216",
   appId: "1:878263613216:web:8821c214aadf02998c0945"
 };
-
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
-const db   = firebase.firestore();
+const db = firebase.firestore();
 const provider = new firebase.auth.GoogleAuthProvider();
 
-// ─── AUTH ──────────────────────────────────────────────────────────
 function signInWithGoogle() {
   document.getElementById('loginError').classList.remove('visible');
-  auth.signInWithPopup(provider).catch(err => {
+  auth.signInWithPopup(provider).catch(() => {
     document.getElementById('loginError').textContent = 'Sign-in failed. Please try again.';
     document.getElementById('loginError').classList.add('visible');
-    console.error(err);
   });
 }
-
-function signOut(e) {
-  e.stopPropagation();
-  auth.signOut();
-}
-
-function toggleDropdown() {
-  document.getElementById('userDropdown').classList.toggle('open');
-}
-
+function signOut(e) { e.stopPropagation(); auth.signOut(); }
+function toggleDropdown() { document.getElementById('userDropdown').classList.toggle('open'); }
 document.addEventListener('click', e => {
   const menu = document.getElementById('userMenu');
-  if (menu && !menu.contains(e.target)) {
-    document.getElementById('userDropdown').classList.remove('open');
-  }
+  if (menu && !menu.contains(e.target)) document.getElementById('userDropdown').classList.remove('open');
 });
-
 auth.onAuthStateChanged(user => {
   if (user) {
     document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('appScreen').style.display  = 'block';
-
-    const name    = user.displayName || 'User';
-    const email   = user.email || '';
-    const photo   = user.photoURL;
-    const initial = name.charAt(0).toUpperCase();
-
-    document.getElementById('dropdownName').textContent  = name;
-    document.getElementById('dropdownEmail').textContent = email;
-    document.getElementById('userInitial').textContent   = initial;
-
-    if (photo) {
+    document.getElementById('appScreen').style.display = 'block';
+    const name = user.displayName || 'User';
+    document.getElementById('dropdownName').textContent = name;
+    document.getElementById('dropdownEmail').textContent = user.email || '';
+    document.getElementById('userInitial').textContent = name.charAt(0).toUpperCase();
+    if (user.photoURL) {
       const img = document.getElementById('userAvatar');
-      img.src = photo;
-      img.style.display = 'block';
+      img.src = user.photoURL; img.style.display = 'block';
       document.getElementById('userInitial').style.display = 'none';
     }
-
-    state.uid = user.uid;
-    init();
+    state.uid = user.uid; init();
   } else {
     document.getElementById('loginScreen').style.display = 'flex';
-    document.getElementById('appScreen').style.display   = 'none';
+    document.getElementById('appScreen').style.display = 'none';
     state.uid = null;
   }
 });
 
-// ─── FIRESTORE HELPERS ─────────────────────────────────────────────
-function sessionsRef(uid) {
-  return db.collection('users').doc(uid).collection('sessions');
-}
-
-async function saveSession(uid, data) {
-  try { await sessionsRef(uid).add(data); } catch (e) { console.warn('Firestore save failed:', e); }
-}
-
+// ─── FIRESTORE ─────────────────────────────────────────────────────
+function sessionsRef(uid) { return db.collection('users').doc(uid).collection('sessions'); }
+async function saveSession(uid, data) { try { await sessionsRef(uid).add(data); } catch(e){} }
 async function getLastSession(uid) {
-  try {
-    const snap = await sessionsRef(uid).orderBy('timestamp', 'desc').limit(1).get();
-    if (snap.empty) return null;
-    return snap.docs[0].data();
-  } catch (e) { return null; }
+  try { const s = await sessionsRef(uid).orderBy('timestamp','desc').limit(1).get(); return s.empty ? null : s.docs[0].data(); } catch(e){ return null; }
 }
-
 async function getSessionStats(uid) {
   try {
-    const snap = await sessionsRef(uid).get();
-    if (snap.empty) return null;
-    const scores = snap.docs.map(d => d.data().scores?.overall).filter(Boolean);
-    return {
-      total: snap.size,
-      best:  scores.length ? Math.max(...scores) : 0,
-      avg:   scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0
-    };
-  } catch (e) { return null; }
+    const s = await sessionsRef(uid).get(); if (s.empty) return null;
+    const scores = s.docs.map(d => d.data().scores?.overall).filter(Boolean);
+    return { total: s.size, best: scores.length ? Math.max(...scores) : 0, avg: scores.length ? scores.reduce((a,b)=>a+b,0)/scores.length : 0 };
+  } catch(e){ return null; }
 }
 
-// ─── APP STATE ─────────────────────────────────────────────────────
+// ─── STATE ─────────────────────────────────────────────────────────
 const BACKEND = 'https://speakup-backend-vert.vercel.app';
+const state = { wakeLock:null, uid:null, currentScenario:0, isRecording:false, mediaRecorder:null, audioChunks:[], audioBlob:null, audioMimeType:'', timerInterval:null, timeLeft:45, maxTime:45, feedbackChoice:'', replayAudio:null, currentSessionScore:0, lastSessionScore:0, currentMode:'quick' };
+const ipState = { questions:[], currentIndex:0, isRecording:false, mediaRecorder:null, audioChunks:[], audioBlob:null, audioMimeType:'', timerInterval:null, timeLeft:90, wakeLock:null, replayAudio:null };
 
-const state = {
-  wakeLock: null,
-  uid: null,
-  currentScenario: 0,
-  isRecording: false,
-  mediaRecorder: null,
-  audioChunks: [],
-  audioBlob: null,
-  audioMimeType: '',
-  timerInterval: null,
-  timeLeft: 45,
-  maxTime: 45,
-  feedbackChoice: '',
-  replayAudio: null,
-  currentSessionScore: 0,
-  lastSessionScore: 0,
-  currentMode: 'quick'
-};
-
-// Interview prep state — completely separate from quick practice state
-const ipState = {
-  questions: [],
-  currentIndex: 0,
-  isRecording: false,
-  mediaRecorder: null,
-  audioChunks: [],
-  audioBlob: null,
-  audioMimeType: '',
-  timerInterval: null,
-  timeLeft: 90,
-  maxTime: 90,
-  wakeLock: null,
-  replayAudio: null
-};
+// ─── PDF EXTRACTION ────────────────────────────────────────────────
+// Uses PDF.js loaded from CDN in <head>. Runs entirely in the browser.
+// No backend change needed. The extracted text drops straight into the textarea.
+async function extractPdf(input, targetId, statusId) {
+  const file = input.files[0];
+  const statusEl = document.getElementById(statusId);
+  if (!file) return;
+  statusEl.textContent = 'Reading PDF...';
+  statusEl.className = 'pdf-upload-status';
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let fullText = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      fullText += content.items.map(item => item.str).join(' ') + '\n';
+    }
+    fullText = fullText.replace(/\s+/g, ' ').trim();
+    if (!fullText || fullText.length < 20) throw new Error('Could not read text from this PDF. Try pasting manually.');
+    document.getElementById(targetId).value = fullText;
+    statusEl.textContent = `✓ ${file.name} (${pdf.numPages} page${pdf.numPages > 1 ? 's' : ''}) — edit above if needed`;
+    statusEl.className = 'pdf-upload-status success';
+    input.value = '';
+  } catch(err) {
+    statusEl.textContent = '⚠ ' + (err.message || 'Could not read PDF. Please paste manually.');
+    statusEl.className = 'pdf-upload-status error';
+    input.value = '';
+  }
+}
 
 // ─── MODE SWITCHING ────────────────────────────────────────────────
 function switchMode(mode) {
@@ -1089,943 +775,510 @@ function switchMode(mode) {
   document.getElementById('tabInterview').classList.toggle('active', mode === 'interview');
   document.getElementById('quickPracticePanel').style.display = mode === 'quick' ? 'block' : 'none';
   document.getElementById('interviewPrepPanel').style.display = mode === 'interview' ? 'block' : 'none';
-
-  // If switching to interview, set timer display to 90s
-  if (mode === 'interview') {
-    document.getElementById('ipTimerNum').textContent = '90';
-    resetIpTimer();
-  }
+  if (mode === 'interview') { document.getElementById('ipTimerNum').textContent = '90'; resetIpTimer(); }
 }
 
 // ─── SCENARIOS ─────────────────────────────────────────────────────
 const scenarios = [
-  {
-    tag: "Why You",
-    prompt: "Why should we hire you over someone with more experience?",
-    sub: "Speak for 30–45 seconds. Be specific.",
-    context: "self-advocacy in interview",
-    hints: [
-      "Don't apologise for having less experience — reframe it as an advantage",
-      "Name one specific quality or result that experience alone doesn't guarantee",
-      "End with a confident claim, not a question or uncertainty"
-    ],
-    structure: "Your edge → Specific proof → Confident close"
-  },
-  {
-    tag: "Justify Price",
-    prompt: "A client asks why they should spend ₹3 lakhs on a Europe holiday when a cheaper package exists.",
-    sub: "Handle this without discounting or getting defensive.",
-    context: "sales objection handling",
-    hints: [
-      "Don't defend the price — explain what the price protects them from",
-      "Use one specific example of what goes wrong with cheap packages",
-      "End by putting the decision back in their hands confidently"
-    ],
-    structure: "What they're really buying → Risk of cheaper → Confident handoff"
-  },
-  {
-    tag: "Overthinking",
-    prompt: "You're explaining an idea during a meeting, but you keep overthinking every sentence. Explain your idea naturally without trying to sound perfect.",
-    sub: "Start speaking before you feel ready.",
-    context: "professional communication under self-pressure",
-    hints: [
-      "Start speaking before you feel ready — the first sentence unlocks the rest",
-      "Use simple words, not impressive ones",
-      "If you lose the thread, pause and continue — don't apologise"
-    ],
-    structure: "Your idea in one sentence → Why it matters → What you'd need"
-  },
-  {
-    tag: "Gap Year",
-    prompt: "The interviewer noticed a one-year gap in your resume and asked about it directly.",
-    sub: "Own it. Don't over-explain.",
-    context: "defensive interview question",
-    hints: [
-      "Don't over-explain or sound defensive — own the gap in one sentence",
-      "Say what you did or learned during that time, even if it was personal",
-      "Pivot to what you're bringing into this role now"
-    ],
-    structure: "Honest reason → What happened during → Why you're ready now"
-  },
-  {
-    tag: "Angry Client",
-    prompt: "A client is frustrated because your team delayed their booking and the package cost increased because of it.",
-    sub: "Acknowledge first. Defend nothing.",
-    context: "client conflict and service recovery",
-    hints: [
-      "Acknowledge the frustration first — don't jump to explaining or defending",
-      "Take responsibility for what your team owns, even if it's uncomfortable",
-      "Offer one concrete next step, not a vague promise"
-    ],
-    structure: "Acknowledge → Own it → Concrete next step"
-  },
-  {
-    tag: "Don't Know",
-    prompt: "A client asks about a destination you're not completely sure about during a live call.",
-    sub: "Don't guess. Don't fake it.",
-    context: "professional honesty under pressure",
-    hints: [
-      "Don't guess and don't fake it — clients can tell",
-      "Say what you do know confidently, then commit to getting the rest",
-      "Buying time is a skill — use it without sounding lost"
-    ],
-    structure: "What you know → Honest gap → Commitment with a timeline"
-  },
-  {
-    tag: "Left Job",
-    prompt: "The interviewer asks why you left your last company.",
-    sub: "Never speak negatively. Reframe as moving toward something.",
-    context: "potentially negative interview question",
-    hints: [
-      "Never speak negatively about a former employer — it always backfires",
-      "Reframe as moving toward something, not running from something",
-      "Keep it short — this is not the answer to spend 3 minutes on"
-    ],
-    structure: "Honest reason framed positively → What you were looking for → Why this role fits"
-  },
-  {
-    tag: "Online Price",
-    prompt: "A client says your package is more expensive than something they found online.",
-    sub: "Don't match the price. Don't dismiss their finding.",
-    context: "price objection from an informed client",
-    hints: [
-      "Don't match the price and don't dismiss their finding",
-      "Ask one question to understand what's actually in that package",
-      "Position yourself as the safer, smarter choice — not the cheaper one"
-    ],
-    structure: "Acknowledge → One clarifying question → Your differentiation"
-  },
-  {
-    tag: "Delayed Task",
-    prompt: "Your manager asks why a task was delayed even after multiple follow-ups from them.",
-    sub: "Own your part. No excuses.",
-    context: "accountability conversation with a manager",
-    hints: [
-      "Don't blame others or list excuses — own your part first",
-      "Be specific about what went wrong, not vague",
-      "End with what you're doing differently going forward"
-    ],
-    structure: "Own it → Specific reason → What changes now"
-  },
-  {
-    tag: "Walk Me Through",
-    prompt: "The interviewer picks a specific company from your resume and asks you to explain exactly what your role was.",
-    sub: "Don't recite your job description. Tell them what you actually did.",
-    context: "resume deep-dive interview question",
-    hints: [
-      "Don't recite your job description — tell them what you actually did day to day",
-      "Quantify where you can — numbers make it real",
-      "End with the impact you had, not just the tasks you completed"
-    ],
-    structure: "Context → What you actually did → Impact or result"
-  },
-  {
-    tag: "Bad News",
-    prompt: "You need to inform a client that their requested travel dates cannot be confirmed.",
-    sub: "Lead with clarity. Come with an alternative.",
-    context: "delivering bad news professionally",
-    hints: [
-      "Lead with clarity — don't bury the bad news in softening language",
-      "Acknowledge the inconvenience genuinely, not with a script",
-      "Come with at least one alternative already prepared"
-    ],
-    structure: "Clear news → Genuine acknowledgement → Alternative ready"
-  },
-  {
-    tag: "On the Spot",
-    prompt: "Your senior suddenly asks you to explain your idea to the group without any preparation.",
-    sub: "One breath. One second. Then start.",
-    context: "impromptu speaking under social pressure",
-    hints: [
-      "Take one breath and one second — it's allowed and it shows composure",
-      "Start with the problem your idea solves, not the idea itself",
-      "If you're not done, say so — 'I can expand on this' is a strong close"
-    ],
-    structure: "The problem → Your idea → What it changes"
-  },
-  {
-    tag: "Weakness",
-    prompt: "The interviewer asks you about a genuine weakness.",
-    sub: "Pick something real. Show what you did about it.",
-    context: "self-awareness interview question",
-    hints: [
-      "Don't say 'I work too hard' — interviewers have heard it a thousand times",
-      "Pick a real weakness that you've actively worked on",
-      "Show what you did about it — the action matters more than the weakness"
-    ],
-    structure: "Real weakness → Impact it had → What you did about it"
-  },
-  {
-    tag: "Cold Client",
-    prompt: "A client was very interested, asked for a detailed itinerary, then stopped responding completely.",
-    sub: "Don't chase with desperation. Reach out with a reason.",
-    context: "re-engaging a silent prospect",
-    hints: [
-      "Don't chase with desperation — it lowers your position",
-      "Reach out once with a reason, not a follow-up for its own sake",
-      "Give them an easy out if they've changed their mind — it builds trust"
-    ],
-    structure: "Warm re-open → New reason to respond → Easy exit if needed"
-  },
-  {
-    tag: "Disagree",
-    prompt: "You disagree with your manager's approach during a team discussion. Say it.",
-    sub: "State your view. Don't bury it in softeners.",
-    context: "assertive upward communication",
-    hints: [
-      "Don't preface with 10 softeners — it buries your point before you make it",
-      "State your view clearly, then explain your reasoning",
-      "End with a question or invitation — you're opening a conversation, not winning an argument"
-    ],
-    structure: "Your position → Your reasoning → Open it up"
-  }
+  { tag:"Why You", prompt:"Why should we hire you over someone with more experience?", sub:"Speak for 30–45 seconds. Be specific.", context:"self-advocacy in interview", hints:["Don't apologise for having less experience — reframe it as an advantage","Name one specific quality or result that experience alone doesn't guarantee","End with a confident claim, not a question or uncertainty"], structure:"Your edge → Specific proof → Confident close" },
+  { tag:"Justify Price", prompt:"A client asks why they should spend ₹3 lakhs on a Europe holiday when a cheaper package exists.", sub:"Handle this without discounting or getting defensive.", context:"sales objection handling", hints:["Don't defend the price — explain what the price protects them from","Use one specific example of what goes wrong with cheap packages","End by putting the decision back in their hands confidently"], structure:"What they're really buying → Risk of cheaper → Confident handoff" },
+  { tag:"Overthinking", prompt:"You're explaining an idea during a meeting, but you keep overthinking every sentence. Explain your idea naturally without trying to sound perfect.", sub:"Start speaking before you feel ready.", context:"professional communication under self-pressure", hints:["Start speaking before you feel ready — the first sentence unlocks the rest","Use simple words, not impressive ones","If you lose the thread, pause and continue — don't apologise"], structure:"Your idea in one sentence → Why it matters → What you'd need" },
+  { tag:"Gap Year", prompt:"The interviewer noticed a one-year gap in your resume and asked about it directly.", sub:"Own it. Don't over-explain.", context:"defensive interview question", hints:["Don't over-explain or sound defensive — own the gap in one sentence","Say what you did or learned during that time, even if it was personal","Pivot to what you're bringing into this role now"], structure:"Honest reason → What happened during → Why you're ready now" },
+  { tag:"Angry Client", prompt:"A client is frustrated because your team delayed their booking and the package cost increased because of it.", sub:"Acknowledge first. Defend nothing.", context:"client conflict and service recovery", hints:["Acknowledge the frustration first — don't jump to explaining or defending","Take responsibility for what your team owns, even if it's uncomfortable","Offer one concrete next step, not a vague promise"], structure:"Acknowledge → Own it → Concrete next step" },
+  { tag:"Don't Know", prompt:"A client asks about a destination you're not completely sure about during a live call.", sub:"Don't guess. Don't fake it.", context:"professional honesty under pressure", hints:["Don't guess and don't fake it — clients can tell","Say what you do know confidently, then commit to getting the rest","Buying time is a skill — use it without sounding lost"], structure:"What you know → Honest gap → Commitment with a timeline" },
+  { tag:"Left Job", prompt:"The interviewer asks why you left your last company.", sub:"Never speak negatively. Reframe as moving toward something.", context:"potentially negative interview question", hints:["Never speak negatively about a former employer — it always backfires","Reframe as moving toward something, not running from something","Keep it short — this is not the answer to spend 3 minutes on"], structure:"Honest reason framed positively → What you were looking for → Why this role fits" },
+  { tag:"Online Price", prompt:"A client says your package is more expensive than something they found online.", sub:"Don't match the price. Don't dismiss their finding.", context:"price objection from an informed client", hints:["Don't match the price and don't dismiss their finding","Ask one question to understand what's actually in that package","Position yourself as the safer, smarter choice — not the cheaper one"], structure:"Acknowledge → One clarifying question → Your differentiation" },
+  { tag:"Delayed Task", prompt:"Your manager asks why a task was delayed even after multiple follow-ups from them.", sub:"Own your part. No excuses.", context:"accountability conversation with a manager", hints:["Don't blame others or list excuses — own your part first","Be specific about what went wrong, not vague","End with what you're doing differently going forward"], structure:"Own it → Specific reason → What changes now" },
+  { tag:"Walk Me Through", prompt:"The interviewer picks a specific company from your resume and asks you to explain exactly what your role was.", sub:"Don't recite your job description. Tell them what you actually did.", context:"resume deep-dive interview question", hints:["Don't recite your job description — tell them what you actually did day to day","Quantify where you can — numbers make it real","End with the impact you had, not just the tasks you completed"], structure:"Context → What you actually did → Impact or result" },
+  { tag:"Bad News", prompt:"You need to inform a client that their requested travel dates cannot be confirmed.", sub:"Lead with clarity. Come with an alternative.", context:"delivering bad news professionally", hints:["Lead with clarity — don't bury the bad news in softening language","Acknowledge the inconvenience genuinely, not with a script","Come with at least one alternative already prepared"], structure:"Clear news → Genuine acknowledgement → Alternative ready" },
+  { tag:"On the Spot", prompt:"Your senior suddenly asks you to explain your idea to the group without any preparation.", sub:"One breath. One second. Then start.", context:"impromptu speaking under social pressure", hints:["Take one breath and one second — it's allowed and it shows composure","Start with the problem your idea solves, not the idea itself","If you're not done, say so — 'I can expand on this' is a strong close"], structure:"The problem → Your idea → What it changes" },
+  { tag:"Weakness", prompt:"The interviewer asks you about a genuine weakness.", sub:"Pick something real. Show what you did about it.", context:"self-awareness interview question", hints:["Don't say 'I work too hard' — interviewers have heard it a thousand times","Pick a real weakness that you've actively worked on","Show what you did about it — the action matters more than the weakness"], structure:"Real weakness → Impact it had → What you did about it" },
+  { tag:"Cold Client", prompt:"A client was very interested, asked for a detailed itinerary, then stopped responding completely.", sub:"Don't chase with desperation. Reach out with a reason.", context:"re-engaging a silent prospect", hints:["Don't chase with desperation — it lowers your position","Reach out once with a reason, not a follow-up for its own sake","Give them an easy out if they've changed their mind — it builds trust"], structure:"Warm re-open → New reason to respond → Easy exit if needed" },
+  { tag:"Disagree", prompt:"You disagree with your manager's approach during a team discussion. Say it.", sub:"State your view. Don't bury it in softeners.", context:"assertive upward communication", hints:["Don't preface with 10 softeners — it buries your point before you make it","State your view clearly, then explain your reasoning","End with a question or invitation — you're opening a conversation, not winning an argument"], structure:"Your position → Your reasoning → Open it up" }
 ];
 
-// ─── FIRST SESSION INTRO ───────────────────────────────────────────
-function checkFirstSession() {
-  const seen = localStorage.getItem('speakup_intro_seen');
-  if (!seen) document.getElementById('introModal').style.display = 'block';
-}
+function checkFirstSession() { if (!localStorage.getItem('speakup_intro_seen')) document.getElementById('introModal').style.display = 'block'; }
+function closeIntro() { document.getElementById('introModal').style.display = 'none'; localStorage.setItem('speakup_intro_seen','true'); }
 
-function closeIntro() {
-  document.getElementById('introModal').style.display = 'none';
-  localStorage.setItem('speakup_intro_seen', 'true');
-}
-
-// ─── INIT ──────────────────────────────────────────────────────────
 async function init() {
-  checkFirstSession();
-  renderScenarios();
-  loadScenario(0);
-  await renderStatsBar();
+  checkFirstSession(); renderScenarios(); loadScenario(0); await renderStatsBar();
   const last = await getLastSession(state.uid);
   state.lastSessionScore = last ? (last.scores?.overall || 0) : 0;
 }
 
-// ─── STATS BAR ─────────────────────────────────────────────────────
 async function renderStatsBar() {
-  const uid = state.uid;
-  if (!uid) return;
-  const stats = await getSessionStats(uid);
+  const stats = await getSessionStats(state.uid);
   if (!stats || stats.total === 0) return;
   document.getElementById('statSessions').textContent = stats.total;
-  document.getElementById('statBest').textContent     = stats.best.toFixed(1);
-  document.getElementById('statAvg').textContent      = stats.avg.toFixed(1);
+  document.getElementById('statBest').textContent = stats.best.toFixed(1);
+  document.getElementById('statAvg').textContent = stats.avg.toFixed(1);
   document.getElementById('statsBar').classList.add('visible');
 }
 
-// ─── PROGRESS BANNER ───────────────────────────────────────────────
-function showProgressBanner(prevScore, currScore) {
-  if (!prevScore || !currScore) return;
-  const delta = (currScore - prevScore).toFixed(1);
-  document.getElementById('prevScoreDisplay').textContent  = prevScore.toFixed(1);
-  document.getElementById('todayScoreDisplay').textContent = currScore.toFixed(1);
-  const deltaEl = document.getElementById('scoreDeltaDisplay');
-  if (delta > 0) { deltaEl.textContent = `+${delta} ↑`; deltaEl.className = 'score-delta positive'; }
-  else           { deltaEl.textContent = `${delta} ↓`;  deltaEl.className = 'score-delta negative'; }
+function showProgressBanner(prev, curr) {
+  if (!prev || !curr) return;
+  const delta = (curr - prev).toFixed(1);
+  document.getElementById('prevScoreDisplay').textContent = prev.toFixed(1);
+  document.getElementById('todayScoreDisplay').textContent = curr.toFixed(1);
+  const el = document.getElementById('scoreDeltaDisplay');
+  if (delta > 0) { el.textContent = `+${delta} ↑`; el.className = 'score-delta positive'; }
+  else { el.textContent = `${delta} ↓`; el.className = 'score-delta negative'; }
   document.getElementById('progressBanner').classList.add('visible');
 }
 
-// ─── SCENARIOS ─────────────────────────────────────────────────────
 function renderScenarios() {
-  const nav = document.getElementById('scenarioNav');
-  nav.innerHTML = '';
-  scenarios.forEach((s, i) => {
+  const nav = document.getElementById('scenarioNav'); nav.innerHTML = '';
+  scenarios.forEach((s,i) => {
     const btn = document.createElement('button');
     btn.className = 'scenario-btn' + (i === 0 ? ' active' : '');
-    btn.textContent = s.tag;
-    btn.onclick = () => loadScenario(i);
-    nav.appendChild(btn);
+    btn.textContent = s.tag; btn.onclick = () => loadScenario(i); nav.appendChild(btn);
   });
 }
 
 function loadScenario(i) {
   state.currentScenario = i;
-  document.querySelectorAll('.scenario-btn').forEach((b, idx) => b.classList.toggle('active', idx === i));
+  document.querySelectorAll('.scenario-btn').forEach((b,idx) => b.classList.toggle('active', idx === i));
   document.getElementById('promptText').textContent = scenarios[i].prompt;
-  document.getElementById('promptSub').textContent  = scenarios[i].sub;
+  document.getElementById('promptSub').textContent = scenarios[i].sub;
   const hints = scenarios[i].hints || [];
-  const hintBox = document.getElementById('hintBox');
-  const hintList = document.getElementById('hintList');
-  hintList.innerHTML = hints.map(h => `<li style="font-size:12px; color:var(--muted); line-height:1.6; padding-left:12px; border-left:2px solid var(--border);">${h}</li>`).join('');
-  hintBox.style.display = hints.length ? 'block' : 'none';
+  document.getElementById('hintList').innerHTML = hints.map(h => `<li style="font-size:12px; color:var(--muted); line-height:1.6; padding-left:12px; border-left:2px solid var(--border);">${h}</li>`).join('');
+  document.getElementById('hintBox').style.display = hints.length ? 'block' : 'none';
   resetUI();
 }
 
 function resetUI() {
-  document.getElementById('feedbackSection').classList.remove('visible');
-  document.getElementById('transcriptBox').classList.remove('visible');
-  document.getElementById('microWin').classList.remove('visible');
-  document.getElementById('feedbackCapture').classList.remove('visible');
-  document.getElementById('progressBanner').classList.remove('visible');
-  document.getElementById('replayBtn').classList.remove('visible');
+  ['feedbackSection','transcriptBox','microWin','feedbackCapture','progressBanner','replayBtn'].forEach(id => document.getElementById(id).classList.remove('visible'));
   document.getElementById('recordStatus').textContent = 'Tap to start speaking';
-  document.getElementById('recordStatus').className   = 'record-status';
+  document.getElementById('recordStatus').className = 'record-status';
   resetTimer();
 }
 
-// ─── TIMER (Quick Practice) ────────────────────────────────────────
 function resetTimer() {
-  clearInterval(state.timerInterval);
-  state.timeLeft = state.maxTime;
-  updateTimerDisplay();
+  clearInterval(state.timerInterval); state.timeLeft = state.maxTime; updateTimerDisplay();
   document.getElementById('timerFill').classList.remove('recording');
   document.getElementById('waveform').classList.remove('active');
   document.getElementById('recordBtn').className = 'record-btn';
 }
-
 function updateTimerDisplay() {
   document.getElementById('timerNum').textContent = state.timeLeft;
-  const progress = (state.maxTime - state.timeLeft) / state.maxTime;
-  document.getElementById('timerFill').style.strokeDashoffset = 283 * (1 - progress);
+  document.getElementById('timerFill').style.strokeDashoffset = 283 * (1 - (state.maxTime - state.timeLeft) / state.maxTime);
 }
+function startTimer() { state.timerInterval = setInterval(() => { state.timeLeft--; updateTimerDisplay(); if (state.timeLeft <= 0) stopRecording(); }, 1000); }
 
-function startTimer() {
-  state.timerInterval = setInterval(() => {
-    state.timeLeft--;
-    updateTimerDisplay();
-    if (state.timeLeft <= 0) stopRecording();
-  }, 1000);
-}
-
-// ─── RECORDING (Quick Practice) ────────────────────────────────────
-async function toggleRecord() {
-  if (state.isRecording) { stopRecording(); } else { startRecording(); }
-}
+async function toggleRecord() { if (state.isRecording) stopRecording(); else startRecording(); }
 
 async function startRecording() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    state.audioChunks = [];
-    state.audioBlob   = null;
-
-    const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm'
-      : MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '';
-
-    state.mediaRecorder   = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
-    state.audioMimeType   = state.mediaRecorder.mimeType || mimeType || 'audio/webm';
+    state.audioChunks = []; state.audioBlob = null;
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '';
+    state.mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+    state.audioMimeType = state.mediaRecorder.mimeType || mimeType || 'audio/webm';
     state.mediaRecorder.ondataavailable = e => { if (e.data.size > 0) state.audioChunks.push(e.data); };
-    state.mediaRecorder.onstop = processAudio;
-    state.mediaRecorder.start(250);
-    state.isRecording = true;
-    state.timeLeft    = state.maxTime;
-
-    document.getElementById('recordBtn').className   = 'record-btn recording';
+    state.mediaRecorder.onstop = processAudio; state.mediaRecorder.start(250);
+    state.isRecording = true; state.timeLeft = state.maxTime;
+    document.getElementById('recordBtn').className = 'record-btn recording';
     document.getElementById('timerFill').classList.add('recording');
     document.getElementById('waveform').classList.add('active');
     document.getElementById('recordStatus').textContent = 'Recording... tap to stop';
-    document.getElementById('recordStatus').className   = 'record-status active';
+    document.getElementById('recordStatus').className = 'record-status active';
     document.getElementById('feedbackSection').classList.remove('visible');
     document.getElementById('transcriptBox').classList.remove('visible');
     document.getElementById('replayBtn').classList.remove('visible');
-
-    try { state.wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
+    try { state.wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
     startTimer();
-  } catch (e) {
-    document.getElementById('recordStatus').textContent = 'Microphone access denied. Please allow mic.';
-  }
+  } catch(e) { document.getElementById('recordStatus').textContent = 'Microphone access denied. Please allow mic.'; }
 }
 
 function stopRecording() {
   if (!state.isRecording) return;
-  clearInterval(state.timerInterval);
-  state.isRecording = false;
+  clearInterval(state.timerInterval); state.isRecording = false;
   if (state.wakeLock) { state.wakeLock.release(); state.wakeLock = null; }
-  state.mediaRecorder.stop();
-  state.mediaRecorder.stream.getTracks().forEach(t => t.stop());
+  state.mediaRecorder.stop(); state.mediaRecorder.stream.getTracks().forEach(t => t.stop());
   document.getElementById('recordBtn').className = 'record-btn disabled';
   document.getElementById('waveform').classList.remove('active');
   document.getElementById('timerFill').classList.remove('recording');
   document.getElementById('recordStatus').textContent = 'Processing your audio...';
-  document.getElementById('recordStatus').className   = 'record-status processing';
+  document.getElementById('recordStatus').className = 'record-status processing';
 }
 
 function replayAudio() {
   if (!state.audioBlob) return;
-  if (state.replayAudio) {
-    state.replayAudio.pause(); state.replayAudio.currentTime = 0; state.replayAudio = null;
-    document.getElementById('replayBtn').textContent = '▶ Replay your answer'; return;
-  }
-  const url = URL.createObjectURL(state.audioBlob);
-  const audio = new Audio(url);
-  state.replayAudio = audio;
-  document.getElementById('replayBtn').textContent = '◼ Stop replay';
-  audio.play();
+  if (state.replayAudio) { state.replayAudio.pause(); state.replayAudio.currentTime = 0; state.replayAudio = null; document.getElementById('replayBtn').textContent = '▶ Replay your answer'; return; }
+  const audio = new Audio(URL.createObjectURL(state.audioBlob)); state.replayAudio = audio;
+  document.getElementById('replayBtn').textContent = '◼ Stop replay'; audio.play();
   audio.onended = () => { state.replayAudio = null; document.getElementById('replayBtn').textContent = '▶ Replay your answer'; };
 }
 
-// ─── PROCESS AUDIO (Quick Practice) ───────────────────────────────
 async function processAudio() {
-  const blob = new Blob(state.audioChunks, { type: state.audioMimeType || 'audio/mp4' });
-  state.audioBlob = blob;
-
+  const blob = new Blob(state.audioChunks, { type: state.audioMimeType || 'audio/mp4' }); state.audioBlob = blob;
   try {
     document.getElementById('recordStatus').textContent = 'Uploading audio...';
-    const transcribeRes = await fetch(BACKEND + '/api/transcribe', { method: 'POST', body: blob });
-    if (!transcribeRes.ok) { const err = await transcribeRes.json(); throw new Error(err.error || 'Upload failed'); }
-    const { id } = await transcribeRes.json();
-
+    const tr = await fetch(BACKEND + '/api/transcribe', { method:'POST', body:blob });
+    if (!tr.ok) { const e = await tr.json(); throw new Error(e.error || 'Upload failed'); }
+    const { id } = await tr.json();
     document.getElementById('recordStatus').textContent = 'Transcribing your speech...';
     let transcript = null; let elapsed = 0;
     for (let i = 0; i < 20; i++) {
       await sleep(3000); elapsed += 3;
       if (elapsed === 15) document.getElementById('recordStatus').textContent = 'Taking longer than usual, please wait...';
-      const statusRes  = await fetch(BACKEND + '/api/status?id=' + id);
-      const statusData = await statusRes.json();
-      if (statusData.status === 'completed') { transcript = statusData.text; break; }
-      if (statusData.status === 'error') throw new Error('Transcription failed. Try again.');
+      const s = await (await fetch(BACKEND + '/api/status?id=' + id)).json();
+      if (s.status === 'completed') { transcript = s.text; break; }
+      if (s.status === 'error') throw new Error('Transcription failed. Try again.');
     }
-
     if (!transcript) throw new Error('Took too long. Please try again.');
     if (transcript.trim().length < 5) throw new Error("Couldn't hear you clearly. Try speaking closer to the mic.");
-
     document.getElementById('transcriptText').innerHTML = highlightFillers(transcript);
     document.getElementById('transcriptBox').classList.add('visible');
     document.getElementById('replayBtn').classList.add('visible');
     document.getElementById('recordStatus').textContent = 'Analysing your speech...';
     await getFeedback(transcript);
-
-  } catch (err) {
-    document.getElementById('recordBtn').className   = 'record-btn';
+  } catch(err) {
+    document.getElementById('recordBtn').className = 'record-btn';
     document.getElementById('replayBtn').classList.add('visible');
     document.getElementById('recordStatus').textContent = '⚠ ' + err.message;
-    document.getElementById('recordStatus').className   = 'record-status';
+    document.getElementById('recordStatus').className = 'record-status';
   }
 }
 
-// ─── FEEDBACK (Quick Practice) ─────────────────────────────────────
 async function getFeedback(transcript) {
-  const scenario   = scenarios[state.currentScenario];
+  const scenario = scenarios[state.currentScenario];
   const spokenWords = transcript.split(' ').length;
-  const duration   = (state.maxTime - state.timeLeft) || 60;
-  const wpm        = Math.round((spokenWords / duration) * 60);
-
-  const res = await fetch(BACKEND + '/api/feedback', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ transcript, scenario, wpm, duration })
-  });
-  if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Feedback failed'); }
-  const feedback = await res.json();
-  await renderFeedback(feedback, transcript, wpm, duration);
+  const duration = (state.maxTime - state.timeLeft) || 60;
+  const wpm = Math.round((spokenWords / duration) * 60);
+  const res = await fetch(BACKEND + '/api/feedback', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ transcript, scenario, wpm, duration }) });
+  if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Feedback failed'); }
+  await renderFeedback(await res.json(), transcript, wpm, duration);
 }
 
 function highlightFillers(text) {
   const fillers = ['um','uh','basically','actually','like','you know','so','right'];
   let result = text;
-  fillers.forEach(f => {
-    const regex = new RegExp('\\b(' + f + ')\\b', 'gi');
-    result = result.replace(regex, '<mark style="background:rgba(255,74,74,0.25);color:#ff8c8c;border-radius:3px;padding:1px 4px;">$1</mark>');
-  });
+  fillers.forEach(f => { result = result.replace(new RegExp('\\b(' + f + ')\\b','gi'), '<mark style="background:rgba(217,119,6,0.15);color:#92400e;border-radius:3px;padding:1px 4px;">$1</mark>'); });
   return result;
 }
 
-// ─── CUSTOM PROMPT GENERATOR ───────────────────────────────────────
 async function generateCustomPrompt() {
   const situation = document.getElementById('customSituationInput').value.trim();
   if (!situation) { document.getElementById('customPromptStatus').textContent = 'Please describe what you want to practice first.'; return; }
-
-  const btn = document.getElementById('generatePromptBtn');
-  const status = document.getElementById('customPromptStatus');
-  btn.textContent = 'Generating...'; btn.style.opacity = '0.7'; btn.style.cursor = 'not-allowed';
-  status.textContent = 'Creating your custom prompt...';
-
+  const btn = document.getElementById('generatePromptBtn'); const status = document.getElementById('customPromptStatus');
+  btn.textContent = 'Generating...'; btn.style.opacity = '0.7'; btn.style.cursor = 'not-allowed'; status.textContent = 'Creating your custom prompt...';
   try {
-    const res = await fetch(BACKEND + '/api/generate-prompt', {
-      method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ situation })
-    });
+    const res = await fetch(BACKEND + '/api/generate-prompt', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ situation }) });
     if (!res.ok) throw new Error('Could not generate prompt');
     const data = await res.json();
-    const customScenario = {
-      tag: 'Custom', prompt: data.prompt,
-      sub: 'Your personalised practice scenario', context: situation,
-      hints: data.hints || [], structure: data.structure || ''
-    };
-    scenarios.unshift(customScenario);
-    renderScenarios();
-    loadScenario(0);
-    status.textContent = '✓ Custom prompt ready — scroll down to start practicing';
-    status.style.color = 'var(--success)';
-  } catch (err) {
-    status.textContent = '⚠ Could not generate prompt. Please try again.';
-    status.style.color = 'var(--danger)';
-  } finally {
-    btn.textContent = 'Generate my prompt →'; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
-  }
+    scenarios.unshift({ tag:'Custom', prompt:data.prompt, sub:'Your personalised practice scenario', context:situation, hints:data.hints||[], structure:data.structure||'' });
+    renderScenarios(); loadScenario(0);
+    status.textContent = '✓ Custom prompt ready — scroll down to start practicing'; status.style.color = 'var(--success)';
+  } catch(err) { status.textContent = '⚠ Could not generate prompt. Please try again.'; status.style.color = 'var(--danger)'; }
+  finally { btn.textContent = 'Generate my prompt →'; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-// ─── RENDER FEEDBACK (Quick Practice) ──────────────────────────────
 async function renderFeedback(f, transcript, wpm, duration) {
-  const conf    = parseFloat(f.confidence_score);
-  const clar    = parseFloat(f.clarity_score);
-  const overall = f.overall_score ? parseFloat(f.overall_score) : parseFloat(((conf + clar) / 2).toFixed(1));
-
+  const conf = parseFloat(f.confidence_score); const clar = parseFloat(f.clarity_score);
+  const overall = f.overall_score ? parseFloat(f.overall_score) : parseFloat(((conf+clar)/2).toFixed(1));
   setScoreEl('scoreConfidence', conf, 10, 'benchConfidence');
-  setScoreEl('scoreClarity',    clar, 10, 'benchClarity');
-
+  setScoreEl('scoreClarity', clar, 10, 'benchClarity');
   document.getElementById('scoreFillers').textContent = f.filler_count;
-  document.getElementById('scoreFillers').className   = 'sc-val ' + (f.filler_count > 8 ? 'bad' : f.filler_count > 3 ? 'mid' : 'good');
-  document.getElementById('fillerSub').textContent    = f.filler_words || 'detected';
-  setBenchFiller('benchFillers', f.filler_count);
-
+  document.getElementById('fillerSub').textContent = f.filler_words && f.filler_words !== 'none' ? f.filler_words : 'detected';
+  setThinkingBench('benchFillers', f.filler_count);
   document.getElementById('scorePace').textContent = f.pace_wpm || wpm;
-  document.getElementById('scorePace').className   = 'sc-val ' + (f.pace_label === 'good' ? 'good' : 'mid');
-  document.getElementById('paceSub').textContent   = (f.pace_label || '') + ' pace';
+  document.getElementById('scorePace').className = 'sc-val ' + (f.pace_label === 'good' ? 'good' : 'mid');
+  document.getElementById('paceSub').textContent = (f.pace_label||'') + ' pace';
   setBenchPace('benchPace', f.pace_label);
-
-  document.getElementById('fix1').textContent         = f.fix_1;
-  document.getElementById('fix2').textContent         = f.fix_2;
+  document.getElementById('fix1').textContent = f.fix_1;
+  document.getElementById('fix2').textContent = f.fix_2;
   document.getElementById('betterVersion').textContent = f.better_version;
-
   state.currentSessionScore = overall;
-
   if (state.lastSessionScore > 0 && overall > state.lastSessionScore) {
-    const delta = (overall - state.lastSessionScore).toFixed(1);
-    const win   = document.getElementById('microWin');
-    win.textContent = `🎯 You beat your last score by +${delta} points. Keep going.`;
+    const win = document.getElementById('microWin');
+    win.textContent = `🎯 You beat your last score by +${(overall - state.lastSessionScore).toFixed(1)} points. Keep going.`;
     win.classList.add('visible');
   }
-
-  const sessionData = {
-    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-    scenario:  scenarios[state.currentScenario].tag,
-    prompt:    scenarios[state.currentScenario].prompt,
-    transcript, wpm, duration,
-    scores: { confidence: conf, clarity: clar, fillers: f.filler_count, pace: f.pace_wpm || wpm, overall },
-    fix_1: f.fix_1, fix_2: f.fix_2,
-    better_version: f.better_version,
-    filler_words: f.filler_words || '', pace_label: f.pace_label || ''
-  };
-  await saveSession(state.uid, sessionData);
-
+  await saveSession(state.uid, { timestamp: firebase.firestore.FieldValue.serverTimestamp(), scenario: scenarios[state.currentScenario].tag, prompt: scenarios[state.currentScenario].prompt, transcript, wpm, duration, scores: { confidence:conf, clarity:clar, fillers:f.filler_count, pace:f.pace_wpm||wpm, overall }, fix_1:f.fix_1, fix_2:f.fix_2, better_version:f.better_version, filler_words:f.filler_words||'', pace_label:f.pace_label||'' });
   if (state.lastSessionScore > 0) showProgressBanner(state.lastSessionScore, overall);
-  state.lastSessionScore = overall;
-  await renderStatsBar();
-
+  state.lastSessionScore = overall; await renderStatsBar();
   const stats = await getSessionStats(state.uid);
   if (stats && stats.total % 3 === 0) document.getElementById('feedbackCapture').classList.add('visible');
-
   document.getElementById('feedbackSection').classList.add('visible');
-  document.getElementById('recordBtn').className   = 'record-btn';
+  document.getElementById('recordBtn').className = 'record-btn';
   document.getElementById('recordStatus').textContent = 'Done! See your analysis below.';
-  document.getElementById('recordStatus').className   = 'record-status';
-  document.getElementById('feedbackSection').scrollIntoView({ behavior: 'smooth' });
+  document.getElementById('recordStatus').className = 'record-status';
+  document.getElementById('feedbackSection').scrollIntoView({ behavior:'smooth' });
 }
 
-// ─── SCORE HELPERS ─────────────────────────────────────────────────
 function setScoreEl(id, val, max, benchId) {
-  const el = document.getElementById(id);
-  el.textContent = val;
-  const pct = val / max;
-  el.className = 'sc-val ' + (pct >= 0.75 ? 'good' : pct >= 0.5 ? 'mid' : 'bad');
+  const el = document.getElementById(id); el.textContent = val;
+  const pct = val / max; el.className = 'sc-val ' + (pct >= 0.75 ? 'good' : pct >= 0.5 ? 'mid' : 'bad');
   if (benchId) setBenchLabel(benchId, pct);
 }
-
 function setBenchLabel(id, pct) {
   const el = document.getElementById(id);
-  if      (pct >= 0.85) { el.textContent = 'Excellent';    el.className = 'sc-bench excellent'; }
-  else if (pct >= 0.65) { el.textContent = 'Strong';       el.className = 'sc-bench strong'; }
-  else if (pct >= 0.45) { el.textContent = 'Keep going';   el.className = 'sc-bench average'; }
-  else                  { el.textContent = 'Room to grow'; el.className = 'sc-bench below'; }
+  if      (pct >= 0.85) { el.textContent='Excellent';    el.className='sc-bench excellent'; }
+  else if (pct >= 0.65) { el.textContent='Strong';       el.className='sc-bench strong'; }
+  else if (pct >= 0.45) { el.textContent='Keep going';   el.className='sc-bench average'; }
+  else                  { el.textContent='Room to grow'; el.className='sc-bench below'; }
 }
-
-function setBenchFiller(id, count) {
+function setThinkingBench(id, count) {
   const el = document.getElementById(id);
-  if      (count <= 2) { el.textContent = 'Excellent';    el.className = 'sc-bench excellent'; }
-  else if (count <= 5) { el.textContent = 'Keep going';   el.className = 'sc-bench average'; }
-  else                 { el.textContent = 'Room to grow'; el.className = 'sc-bench below'; }
+  if      (count <= 2) el.textContent = 'Minimal buffering';
+  else if (count <= 5) el.textContent = 'Some patterns noted';
+  else                 el.textContent = 'Focus area for retry';
 }
-
 function setBenchPace(id, label) {
   const el = document.getElementById(id);
-  if      (label === 'good') { el.textContent = 'Strong';   el.className = 'sc-bench strong'; }
-  else if (label === 'fast') { el.textContent = 'Too Fast'; el.className = 'sc-bench average'; }
-  else if (label === 'slow') { el.textContent = 'Too Slow'; el.className = 'sc-bench average'; }
-  else                       { el.textContent = 'Average';  el.className = 'sc-bench average'; }
+  if      (label==='good') { el.textContent='Strong';   el.className='sc-bench strong'; }
+  else if (label==='fast') { el.textContent='Too Fast'; el.className='sc-bench average'; }
+  else if (label==='slow') { el.textContent='Too Slow'; el.className='sc-bench average'; }
+  else                     { el.textContent='Average';  el.className='sc-bench average'; }
 }
 
-// ─── NAVIGATION (Quick Practice) ───────────────────────────────────
 function retryPrompt() {
-  document.getElementById('feedbackSection').classList.remove('visible');
-  document.getElementById('transcriptBox').classList.remove('visible');
-  document.getElementById('microWin').classList.remove('visible');
-  document.getElementById('replayBtn').classList.remove('visible');
-  document.getElementById('progressBanner').classList.remove('visible');
-  resetTimer();
-  document.getElementById('recordStatus').textContent = 'Tap to try again — beat your score';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  ['feedbackSection','transcriptBox','microWin','replayBtn','progressBanner'].forEach(id => document.getElementById(id).classList.remove('visible'));
+  resetTimer(); document.getElementById('recordStatus').textContent = 'Tap to try again — beat your score';
+  window.scrollTo({ top:0, behavior:'smooth' });
 }
+function nextPrompt() { loadScenario((state.currentScenario + 1) % scenarios.length); window.scrollTo({ top:0, behavior:'smooth' }); }
+function selectFeedback(btn, val) { document.querySelectorAll('.fc-opt').forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); state.feedbackChoice = val; }
+function submitFeedback() { document.getElementById('feedbackCapture').innerHTML = '<div style="color:var(--success);font-size:13px;">✓ Thanks. This helps us improve.</div>'; }
 
-function nextPrompt() {
-  loadScenario((state.currentScenario + 1) % scenarios.length);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function selectFeedback(btn, val) {
-  document.querySelectorAll('.fc-opt').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  state.feedbackChoice = val;
-}
-
-function submitFeedback() {
-  document.getElementById('feedbackCapture').innerHTML = '<div style="color:var(--success);font-size:13px;">✓ Thanks. This helps us improve.</div>';
-}
-
-// ════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 // INTERVIEW PREP MODE
-// ════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 
 async function generateInterviewQuestions() {
-  const background      = document.getElementById('ipBackground').value.trim();
-  const jobDescription  = document.getElementById('ipJobDescription').value.trim();
-
-  if (!background || background.length < 10) {
-    document.getElementById('ipStatus').textContent = '⚠ Please add a background summary first.';
-    return;
-  }
-  if (!jobDescription || jobDescription.length < 20) {
-    document.getElementById('ipStatus').textContent = '⚠ Please paste the job description first.';
-    return;
-  }
-
+  const background = document.getElementById('ipBackground').value.trim();
+  const jobDescription = document.getElementById('ipJobDescription').value.trim();
+  if (!background || background.length < 10) { document.getElementById('ipStatus').textContent = '⚠ Please add a background summary first.'; return; }
+  if (!jobDescription || jobDescription.length < 20) { document.getElementById('ipStatus').textContent = '⚠ Please paste or upload the job description first.'; return; }
   const btn = document.getElementById('ipGenerateBtn');
-  btn.disabled = true;
-  btn.textContent = 'Analysing gaps...';
+  btn.disabled = true; btn.textContent = 'Analysing gaps...';
   document.getElementById('ipStatus').textContent = 'Running gap analysis — this takes about 10 seconds...';
   document.getElementById('ipGapsCard').classList.remove('visible');
   document.getElementById('ipQuestionArea').classList.remove('visible');
   document.getElementById('ipComplete').classList.remove('visible');
-
   try {
-    const res = await fetch(BACKEND + '/api/interview-prep', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ background, jobDescription })
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || 'Could not generate questions');
-    }
-
+    const res = await fetch(BACKEND + '/api/interview-prep', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ background, jobDescription }) });
+    if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Could not generate questions'); }
     const data = await res.json();
-    ipState.questions    = data.questions;
-    ipState.currentIndex = 0;
-
-    // Show gaps
-    const gapsList = document.getElementById('ipGapsList');
+    ipState.questions = data.questions; ipState.currentIndex = 0;
     if (data.gaps && data.gaps.length) {
-      gapsList.innerHTML = data.gaps.map((g, i) =>
-        `<div class="ip-gap-item"><span class="ip-gap-num">0${i+1}</span><span>${g}</span></div>`
-      ).join('');
+      document.getElementById('ipGapsList').innerHTML = data.gaps.map((g,i) => `<div class="ip-gap-item"><span class="ip-gap-num">0${i+1}</span><span>${g}</span></div>`).join('');
       document.getElementById('ipGapsCard').classList.add('visible');
     }
-
-    // Build progress dots
-    buildProgressDots();
-
-    // Load first question
-    loadInterviewQuestion(0);
-
-    // Hide input phase
+    buildProgressDots(); loadInterviewQuestion(0);
     document.getElementById('ipInputPhase').style.display = 'none';
     document.getElementById('ipStatus').textContent = '';
-
-  } catch (err) {
+  } catch(err) {
     document.getElementById('ipStatus').textContent = '⚠ ' + err.message;
-    btn.disabled = false;
-    btn.textContent = 'Analyse gaps and generate questions →';
+    btn.disabled = false; btn.textContent = 'Analyse gaps and generate questions →';
   }
 }
 
 function buildProgressDots() {
-  const container = document.getElementById('ipProgressDots');
-  container.innerHTML = '';
+  const c = document.getElementById('ipProgressDots'); c.innerHTML = '';
   for (let i = 0; i < 6; i++) {
     const dot = document.createElement('div');
-    dot.className = 'ip-dot' + (i === 0 ? ' active' : '');
-    dot.id = `ipDot${i}`;
-    container.appendChild(dot);
+    dot.className = 'ip-dot' + (i === 0 ? ' active' : ''); dot.id = `ipDot${i}`; c.appendChild(dot);
   }
 }
 
 function loadInterviewQuestion(index) {
-  const q = ipState.questions[index];
-  if (!q) return;
-
+  const q = ipState.questions[index]; if (!q) return;
   ipState.currentIndex = index;
-
-  // Update progress
-  document.getElementById('ipProgressLabel').textContent = `Question ${index + 1} of 6`;
-  for (let i = 0; i < 6; i++) {
-    const dot = document.getElementById(`ipDot${i}`);
-    if (!dot) continue;
-    dot.className = 'ip-dot' + (i < index ? ' done' : i === index ? ' active' : '');
-  }
-
-  // Difficulty badge
-  const badge = document.getElementById('ipDifficultyBadge');
-  badge.textContent = q.difficulty;
-  badge.className   = `ip-difficulty-badge ${q.difficulty}`;
-
-  // Question text
+  document.getElementById('ipProgressLabel').textContent = `Question ${index+1} of 6`;
+  for (let i = 0; i < 6; i++) { const d = document.getElementById(`ipDot${i}`); if (d) d.className = 'ip-dot' + (i < index ? ' done' : i === index ? ' active' : ''); }
+  const badge = document.getElementById('ipDifficultyBadge'); badge.textContent = q.difficulty; badge.className = `ip-difficulty-badge ${q.difficulty}`;
   document.getElementById('ipQuestionText').textContent = q.text;
-
-  // Hints
-  document.getElementById('ipHintsList').innerHTML = (q.hints || []).map(h =>
-    `<div class="ip-hint-item">${h}</div>`
-  ).join('');
-
-  // Logic structure
-  document.getElementById('ipStructureList').innerHTML = (q.logic_structure || []).map(s =>
-    `<div class="ip-structure-item">${s}</div>`
-  ).join('');
-
-  // Reset recording state for this question
+  document.getElementById('ipHintsList').innerHTML = (q.hints||[]).map(h => `<div class="ip-hint-item">${h}</div>`).join('');
+  document.getElementById('ipStructureList').innerHTML = (q.logic_structure||[]).map(s => `<div class="ip-structure-item">${s}</div>`).join('');
+  hidePinnedScaffold();
   resetIpRecordingUI();
-
-  // Show question area
   document.getElementById('ipQuestionArea').classList.add('visible');
-  document.getElementById('ipQuestionArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('ipQuestionArea').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+// ─── PINNED SCAFFOLD ──────────────────────────────────────────────
+function showPinnedScaffold() {
+  const q = ipState.questions[ipState.currentIndex]; if (!q || !q.logic_structure) return;
+  document.getElementById('ipScaffoldItems').innerHTML = q.logic_structure.map(s => `<div class="pinned-scaffold-item">${s}</div>`).join('');
+  document.getElementById('ipPinnedScaffold').classList.add('visible');
+}
+function hidePinnedScaffold() {
+  document.getElementById('ipPinnedScaffold').classList.remove('visible');
+  document.getElementById('ipScaffoldItems').innerHTML = '';
 }
 
 function resetIpRecordingUI() {
-  // Clear any active recording
-  if (ipState.isRecording) {
-    ipState.mediaRecorder?.stop();
-    ipState.mediaRecorder?.stream?.getTracks().forEach(t => t.stop());
-    ipState.isRecording = false;
-  }
+  if (ipState.isRecording) { ipState.mediaRecorder?.stop(); ipState.mediaRecorder?.stream?.getTracks().forEach(t => t.stop()); ipState.isRecording = false; }
   clearInterval(ipState.timerInterval);
-
-  document.getElementById('ipFeedbackSection').classList.remove('visible');
-  document.getElementById('ipTranscriptBox').classList.remove('visible');
-  document.getElementById('ipNextBtn').classList.remove('visible');
-  document.getElementById('ipReplayBtn').classList.remove('visible');
+  ['ipFeedbackSection','ipTranscriptBox','ipNextBtn','ipReplayBtn'].forEach(id => document.getElementById(id).classList.remove('visible'));
   document.getElementById('ipRecordStatus').textContent = 'Tap to answer this question';
-  document.getElementById('ipRecordStatus').className   = 'record-status';
-  document.getElementById('ipRecordBtn').className      = 'record-btn';
+  document.getElementById('ipRecordStatus').className = 'record-status';
+  document.getElementById('ipRecordBtn').className = 'record-btn';
   document.getElementById('ipWaveform').classList.remove('active');
   resetIpTimer();
 }
 
-// ─── IP TIMER ─────────────────────────────────────────────────────
+// ─── RETRY — shows pinned scaffold ────────────────────────────────
+function retryIpQuestion() {
+  ['ipFeedbackSection','ipTranscriptBox','ipNextBtn','ipReplayBtn'].forEach(id => document.getElementById(id).classList.remove('visible'));
+  resetIpTimer();
+  document.getElementById('ipRecordStatus').textContent = 'Use the structure below — then record again';
+  document.getElementById('ipRecordBtn').className = 'record-btn';
+  showPinnedScaffold();
+  document.getElementById('ipPinnedScaffold').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
 function resetIpTimer() {
-  clearInterval(ipState.timerInterval);
-  ipState.timeLeft = 90;
-  updateIpTimerDisplay();
+  clearInterval(ipState.timerInterval); ipState.timeLeft = 90; updateIpTimerDisplay();
   document.getElementById('ipTimerFill').classList.remove('recording');
 }
-
 function updateIpTimerDisplay() {
   document.getElementById('ipTimerNum').textContent = ipState.timeLeft;
-  const progress = (90 - ipState.timeLeft) / 90;
-  document.getElementById('ipTimerFill').style.strokeDashoffset = 283 * (1 - progress);
+  document.getElementById('ipTimerFill').style.strokeDashoffset = 283 * (1 - (90 - ipState.timeLeft) / 90);
 }
+function startIpTimer() { ipState.timerInterval = setInterval(() => { ipState.timeLeft--; updateIpTimerDisplay(); if (ipState.timeLeft <= 0) stopIpRecording(); }, 1000); }
 
-function startIpTimer() {
-  ipState.timerInterval = setInterval(() => {
-    ipState.timeLeft--;
-    updateIpTimerDisplay();
-    if (ipState.timeLeft <= 0) stopIpRecording();
-  }, 1000);
-}
-
-// ─── IP RECORDING ─────────────────────────────────────────────────
-async function toggleIpRecord() {
-  if (ipState.isRecording) { stopIpRecording(); } else { startIpRecording(); }
-}
+async function toggleIpRecord() { if (ipState.isRecording) stopIpRecording(); else startIpRecording(); }
 
 async function startIpRecording() {
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    ipState.audioChunks = [];
-    ipState.audioBlob   = null;
-
-    const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm'
-      : MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '';
-
+    const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
+    ipState.audioChunks = []; ipState.audioBlob = null;
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '';
     ipState.mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
     ipState.audioMimeType = ipState.mediaRecorder.mimeType || mimeType || 'audio/webm';
     ipState.mediaRecorder.ondataavailable = e => { if (e.data.size > 0) ipState.audioChunks.push(e.data); };
-    ipState.mediaRecorder.onstop = processIpAudio;
-    ipState.mediaRecorder.start(250);
-    ipState.isRecording = true;
-    ipState.timeLeft    = 90;
-
-    document.getElementById('ipRecordBtn').className   = 'record-btn recording';
+    ipState.mediaRecorder.onstop = processIpAudio; ipState.mediaRecorder.start(250);
+    ipState.isRecording = true; ipState.timeLeft = 90;
+    document.getElementById('ipRecordBtn').className = 'record-btn recording';
     document.getElementById('ipTimerFill').classList.add('recording');
     document.getElementById('ipWaveform').classList.add('active');
     document.getElementById('ipRecordStatus').textContent = 'Recording... tap to stop';
-    document.getElementById('ipRecordStatus').className   = 'record-status active';
+    document.getElementById('ipRecordStatus').className = 'record-status active';
     document.getElementById('ipFeedbackSection').classList.remove('visible');
     document.getElementById('ipTranscriptBox').classList.remove('visible');
     document.getElementById('ipReplayBtn').classList.remove('visible');
-
-    try { ipState.wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
+    try { ipState.wakeLock = await navigator.wakeLock.request('screen'); } catch(e){}
     startIpTimer();
-  } catch (e) {
-    document.getElementById('ipRecordStatus').textContent = 'Microphone access denied. Please allow mic.';
-  }
+  } catch(e) { document.getElementById('ipRecordStatus').textContent = 'Microphone access denied. Please allow mic.'; }
 }
 
 function stopIpRecording() {
   if (!ipState.isRecording) return;
-  clearInterval(ipState.timerInterval);
-  ipState.isRecording = false;
+  clearInterval(ipState.timerInterval); ipState.isRecording = false;
   if (ipState.wakeLock) { ipState.wakeLock.release(); ipState.wakeLock = null; }
-  ipState.mediaRecorder.stop();
-  ipState.mediaRecorder.stream.getTracks().forEach(t => t.stop());
+  ipState.mediaRecorder.stop(); ipState.mediaRecorder.stream.getTracks().forEach(t => t.stop());
   document.getElementById('ipRecordBtn').className = 'record-btn disabled';
   document.getElementById('ipWaveform').classList.remove('active');
   document.getElementById('ipTimerFill').classList.remove('recording');
   document.getElementById('ipRecordStatus').textContent = 'Processing your audio...';
-  document.getElementById('ipRecordStatus').className   = 'record-status processing';
+  document.getElementById('ipRecordStatus').className = 'record-status processing';
 }
 
 function replayIpAudio() {
   if (!ipState.audioBlob) return;
-  if (ipState.replayAudio) {
-    ipState.replayAudio.pause(); ipState.replayAudio.currentTime = 0; ipState.replayAudio = null;
-    document.getElementById('ipReplayBtn').textContent = '▶ Replay your answer'; return;
-  }
-  const url = URL.createObjectURL(ipState.audioBlob);
-  const audio = new Audio(url);
-  ipState.replayAudio = audio;
-  document.getElementById('ipReplayBtn').textContent = '◼ Stop replay';
-  audio.play();
+  if (ipState.replayAudio) { ipState.replayAudio.pause(); ipState.replayAudio.currentTime = 0; ipState.replayAudio = null; document.getElementById('ipReplayBtn').textContent = '▶ Replay your answer'; return; }
+  const audio = new Audio(URL.createObjectURL(ipState.audioBlob)); ipState.replayAudio = audio;
+  document.getElementById('ipReplayBtn').textContent = '◼ Stop replay'; audio.play();
   audio.onended = () => { ipState.replayAudio = null; document.getElementById('ipReplayBtn').textContent = '▶ Replay your answer'; };
 }
 
-// ─── PROCESS IP AUDIO ─────────────────────────────────────────────
 async function processIpAudio() {
-  const blob = new Blob(ipState.audioChunks, { type: ipState.audioMimeType || 'audio/mp4' });
-  ipState.audioBlob = blob;
-
+  const blob = new Blob(ipState.audioChunks, { type: ipState.audioMimeType || 'audio/mp4' }); ipState.audioBlob = blob;
   try {
     document.getElementById('ipRecordStatus').textContent = 'Uploading audio...';
-    const transcribeRes = await fetch(BACKEND + '/api/transcribe', { method: 'POST', body: blob });
-    if (!transcribeRes.ok) { const err = await transcribeRes.json(); throw new Error(err.error || 'Upload failed'); }
-    const { id } = await transcribeRes.json();
-
+    const tr = await fetch(BACKEND + '/api/transcribe', { method:'POST', body:blob });
+    if (!tr.ok) { const e = await tr.json(); throw new Error(e.error || 'Upload failed'); }
+    const { id } = await tr.json();
     document.getElementById('ipRecordStatus').textContent = 'Transcribing your speech...';
     let transcript = null; let elapsed = 0;
     for (let i = 0; i < 20; i++) {
       await sleep(3000); elapsed += 3;
       if (elapsed === 15) document.getElementById('ipRecordStatus').textContent = 'Taking a moment — please wait...';
-      const statusRes  = await fetch(BACKEND + '/api/status?id=' + id);
-      const statusData = await statusRes.json();
-      if (statusData.status === 'completed') { transcript = statusData.text; break; }
-      if (statusData.status === 'error') throw new Error('Transcription failed. Try again.');
+      const s = await (await fetch(BACKEND + '/api/status?id=' + id)).json();
+      if (s.status === 'completed') { transcript = s.text; break; }
+      if (s.status === 'error') throw new Error('Transcription failed. Try again.');
     }
-
     if (!transcript) throw new Error('Took too long. Please try again.');
     if (transcript.trim().length < 5) throw new Error("Couldn't hear you clearly. Try speaking closer to the mic.");
-
     document.getElementById('ipTranscriptText').innerHTML = highlightFillers(transcript);
     document.getElementById('ipTranscriptBox').classList.add('visible');
     document.getElementById('ipReplayBtn').classList.add('visible');
     document.getElementById('ipRecordStatus').textContent = 'Analysing your response...';
-
     await getIpFeedback(transcript);
-
-  } catch (err) {
-    document.getElementById('ipRecordBtn').className   = 'record-btn';
+  } catch(err) {
+    document.getElementById('ipRecordBtn').className = 'record-btn';
     document.getElementById('ipReplayBtn').classList.add('visible');
     document.getElementById('ipRecordStatus').textContent = '⚠ ' + err.message;
-    document.getElementById('ipRecordStatus').className   = 'record-status';
+    document.getElementById('ipRecordStatus').className = 'record-status';
   }
 }
 
-// ─── IP FEEDBACK ──────────────────────────────────────────────────
 async function getIpFeedback(transcript) {
   const q = ipState.questions[ipState.currentIndex];
-  const scenario = {
-    context: `Interview question: ${q.difficulty} level — ${q.text}`,
-    prompt:  q.text
-  };
+  const scenario = { context:`Interview question: ${q.difficulty} level — ${q.text}`, prompt:q.text };
   const spokenWords = transcript.split(' ').length;
-  const duration    = (90 - ipState.timeLeft) || 60;
-  const wpm         = Math.round((spokenWords / duration) * 60);
-
-  const res = await fetch(BACKEND + '/api/feedback', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ transcript, scenario, wpm, duration })
-  });
-  if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Feedback failed'); }
-  const feedback = await res.json();
-  renderIpFeedback(feedback, wpm);
+  const duration = (90 - ipState.timeLeft) || 60;
+  const wpm = Math.round((spokenWords / duration) * 60);
+  const res = await fetch(BACKEND + '/api/feedback', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ transcript, scenario, wpm, duration }) });
+  if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Feedback failed'); }
+  renderIpFeedback(await res.json(), wpm);
 }
 
 function renderIpFeedback(f, wpm) {
-  const conf    = parseFloat(f.confidence_score);
-  const clar    = parseFloat(f.clarity_score);
-
-  // Reuse setScoreEl with ip- prefixed IDs
+  const conf = parseFloat(f.confidence_score); const clar = parseFloat(f.clarity_score);
   setScoreEl('ipScoreConfidence', conf, 10, 'ipBenchConfidence');
-  setScoreEl('ipScoreClarity',    clar, 10, 'ipBenchClarity');
-
+  setScoreEl('ipScoreClarity', clar, 10, 'ipBenchClarity');
   document.getElementById('ipScoreFillers').textContent = f.filler_count;
-  document.getElementById('ipScoreFillers').className   = 'sc-val ' + (f.filler_count > 8 ? 'bad' : f.filler_count > 3 ? 'mid' : 'good');
-  document.getElementById('ipFillerSub').textContent    = f.filler_words || 'detected';
-  setBenchFiller('ipBenchFillers', f.filler_count);
-
+  document.getElementById('ipFillerSub').textContent = f.filler_words && f.filler_words !== 'none' ? f.filler_words : 'detected';
+  setThinkingBench('ipBenchFillers', f.filler_count);
   document.getElementById('ipScorePace').textContent = f.pace_wpm || wpm;
-  document.getElementById('ipScorePace').className   = 'sc-val ' + (f.pace_label === 'good' ? 'good' : 'mid');
-  document.getElementById('ipPaceSub').textContent   = (f.pace_label || '') + ' pace';
+  document.getElementById('ipScorePace').className = 'sc-val ' + (f.pace_label === 'good' ? 'good' : 'mid');
+  document.getElementById('ipPaceSub').textContent = (f.pace_label||'') + ' pace';
   setBenchPace('ipBenchPace', f.pace_label);
-
-  document.getElementById('ipFix1').textContent         = f.fix_1;
-  document.getElementById('ipFix2').textContent         = f.fix_2;
+  document.getElementById('ipFix1').textContent = f.fix_1;
+  document.getElementById('ipFix2').textContent = f.fix_2;
   document.getElementById('ipBetterVersion').textContent = f.better_version;
-
+  hidePinnedScaffold();
   document.getElementById('ipFeedbackSection').classList.add('visible');
-  document.getElementById('ipRecordBtn').className   = 'record-btn';
+  document.getElementById('ipRecordBtn').className = 'record-btn';
   document.getElementById('ipRecordStatus').textContent = 'Done! See analysis below.';
-  document.getElementById('ipRecordStatus').className   = 'record-status';
-
-  // Show next button — label changes on last question
+  document.getElementById('ipRecordStatus').className = 'record-status';
   const nextBtn = document.getElementById('ipNextBtn');
   nextBtn.textContent = ipState.currentIndex < 5 ? `Next Question (${ipState.currentIndex + 2} of 6) →` : 'Finish Session →';
   nextBtn.classList.add('visible');
-
-  document.getElementById('ipFeedbackSection').scrollIntoView({ behavior: 'smooth' });
+  document.getElementById('ipFeedbackSection').scrollIntoView({ behavior:'smooth' });
 }
 
 function nextInterviewQuestion() {
   const next = ipState.currentIndex + 1;
   if (next >= 6) {
-    // Session complete
     document.getElementById('ipQuestionArea').classList.remove('visible');
     document.getElementById('ipGapsCard').classList.remove('visible');
     document.getElementById('ipComplete').classList.add('visible');
-    document.getElementById('ipComplete').scrollIntoView({ behavior: 'smooth' });
-  } else {
-    loadInterviewQuestion(next);
-  }
+    document.getElementById('ipComplete').scrollIntoView({ behavior:'smooth' });
+  } else { loadInterviewQuestion(next); }
 }
 
 function restartInterviewPrep() {
-  // Reset everything and show input phase again
-  ipState.questions    = [];
-  ipState.currentIndex = 0;
-  document.getElementById('ipComplete').classList.remove('visible');
-  document.getElementById('ipQuestionArea').classList.remove('visible');
-  document.getElementById('ipGapsCard').classList.remove('visible');
+  ipState.questions = []; ipState.currentIndex = 0;
+  ['ipComplete','ipQuestionArea','ipGapsCard'].forEach(id => document.getElementById(id).classList.remove('visible'));
+  hidePinnedScaffold();
   document.getElementById('ipInputPhase').style.display = 'block';
-  document.getElementById('ipBackground').value         = '';
-  document.getElementById('ipJobDescription').value     = '';
-  document.getElementById('ipStatus').textContent       = '';
-  const btn = document.getElementById('ipGenerateBtn');
-  btn.disabled    = false;
-  btn.textContent = 'Analyse gaps and generate questions →';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  document.getElementById('ipBackground').value = '';
+  document.getElementById('ipJobDescription').value = '';
+  document.getElementById('ipStatus').textContent = '';
+  document.getElementById('resumePdfStatus').textContent = 'or type above';
+  document.getElementById('resumePdfStatus').className = 'pdf-upload-status';
+  document.getElementById('jdPdfStatus').textContent = 'or paste above';
+  document.getElementById('jdPdfStatus').className = 'pdf-upload-status';
+  const btn = document.getElementById('ipGenerateBtn'); btn.disabled = false; btn.textContent = 'Analyse gaps and generate questions →';
+  window.scrollTo({ top:0, behavior:'smooth' });
 }
-
 </script>
 </body>
 </html>
